@@ -273,9 +273,30 @@ h1, h2, h3, .logo {
 /* Game Page */
 .game-body { padding: 20px; gap: 20px; height: 100vh; max-height: 100vh; box-sizing: border-box; }
 .kpi-header { display: flex; justify-content: space-between; padding: 20px 40px; flex-shrink: 0; background: var(--panel-bg); }
-.kpi-box { display: flex; flex-direction: column; align-items: center; }
+.kpi-box { display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; }
+.kpi-box:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background: var(--border-color);
+}
 .kpi-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; letter-spacing: 1px; margin-bottom: 5px; }
 .kpi-value { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 400; transition: color 0.3s ease; display: inline-block;}
+.trend-arrow {
+    display: inline-block;
+    font-weight: bold;
+    margin-left: 5px;
+    font-size: 0.85rem;
+}
+.positive-trend {
+    color: var(--positive) !important;
+}
+.negative-trend {
+    color: var(--negative) !important;
+}
 .positive { color: var(--positive); }
 .negative { color: var(--negative); }
 
@@ -908,13 +929,22 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     .kpi-header {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        gap: 0;
         padding: 15px;
     }
     
     .kpi-box {
-        padding: 5px;
+        padding: 10px 5px;
         border-bottom: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+    }
+    
+    .kpi-box::after {
+        display: none !important;
+    }
+    
+    .kpi-box:nth-child(4n) {
+        border-right: none;
     }
     
     .kpi-box:nth-child(n+5) {
@@ -957,13 +987,23 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 @media (max-width: 480px) {
     .kpi-header {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0;
     }
     
     .kpi-box {
+        border-right: none;
         border-bottom: 1px solid var(--border-color);
     }
     
-    .kpi-box:nth-child(7), .kpi-box:nth-child(8) {
+    .kpi-box::after {
+        display: none !important;
+    }
+    
+    .kpi-box:nth-child(odd) {
+        border-right: 1px solid var(--border-color);
+    }
+    
+    .kpi-box:nth-child(n+7) {
         border-bottom: none;
     }
     

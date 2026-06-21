@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ player.name }} | Company Sim</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20width='32'%20height='32'%3E%3Crect%20width='24'%20height='24'%20rx='6'%20fill='%23111111'/%3E%3Crect%20width='12'%20height='12'%20x='6'%20y='6'%20rx='1.5'%20fill='none'%20stroke='%2339e622'%20stroke-width='1.5'/%3E%3Crect%20width='4'%20height='4'%20x='10'%20y='10'%20rx='0.5'%20fill='none'%20stroke='%2339e622'%20stroke-width='1.5'/%3E%3Cpath%20d='M10%202v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M14%202v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M10%2018v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M14%2018v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M18%2010h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M18%2014h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M2%2010h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M2%2014h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="/static/css/style.css?v=1.2">
     <link rel="stylesheet" href="/static/css/charts.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,10 +21,6 @@
         <div class="kpi-box">
             <span class="kpi-label"><i data-lucide="dollar-sign" class="inline-icon"></i> Revenue</span>
             <span class="kpi-value positive" id="kpi-revenue">$0</span>
-        </div>
-        <div class="kpi-box">
-            <span class="kpi-label"><i data-lucide="target" class="inline-icon"></i> Goal Target</span>
-            <span class="kpi-value" id="kpi-goal" style="color: var(--primary-color);">$10,000,000</span>
         </div>
         <div class="kpi-box">
             <span class="kpi-label"><i data-lucide="smile" class="inline-icon"></i> Morale</span>
@@ -738,6 +735,7 @@
                                     <div class="crt-content">
                                         <div class="crt-line green-glow">> SYS: ONLINE</div>
                                         <div class="crt-line">REV: <span id="crt-val-rev">$0</span></div>
+                                        <div class="crt-line">GOAL: <span id="crt-val-goal">$10M</span></div>
                                         <div class="crt-line">UP: <span id="crt-val-uptime">0%</span></div>
                                         <div class="crt-line">MORALE: <span id="crt-val-morale">0%</span></div>
                                         <div class="crt-line cmd-line">_</div>
@@ -785,6 +783,13 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Goal Target widget below the 3D PC -->
+            <div class="sidebar-goal-card" style="margin-top: 15px; padding: 12px; background: var(--card-bg-solid); border: 1px solid var(--border-color); border-radius: var(--border-radius); text-align: center; box-shadow: var(--shadow-soft);">
+                <span class="kpi-label" style="display: block; margin-bottom: 5px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; letter-spacing: 1px;">
+                    <i data-lucide="target" class="inline-icon" style="color: var(--primary-color);"></i> Goal Target
+                </span>
+                <span class="kpi-value" id="kpi-goal" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 600; color: var(--primary-color);">$10,000,000</span>
             </div>
         </aside>
     </div>
@@ -1755,15 +1760,37 @@
 
         const updateKPI = (id, newValue, formatFunc) => {
             const el = document.getElementById(id);
+            if (!el) return;
             const oldVal = el.dataset.val;
+            let trendHtml = '';
+            
             if (oldVal !== undefined && oldVal != newValue) {
-                el.classList.remove('flash-up', 'flash-down');
-                void el.offsetWidth; // trigger reflow
-                if (newValue > parseFloat(oldVal)) el.classList.add('flash-up');
-                else el.classList.add('flash-down');
+                const diff = parseFloat(newValue) - parseFloat(oldVal);
+                if (diff !== 0 && !isNaN(diff)) {
+                    el.classList.remove('flash-up', 'flash-down');
+                    void el.offsetWidth; // trigger reflow
+                    
+                    const isUp = diff > 0;
+                    let isPositiveTrend = isUp;
+                    if (id.includes('debt') || id.includes('tech-debt')) {
+                        isPositiveTrend = !isUp;
+                    }
+                    
+                    if (isUp) {
+                        el.classList.add('flash-up');
+                        trendHtml = `<span class="trend-arrow ${isPositiveTrend ? 'positive-trend' : 'negative-trend'}">▲</span>`;
+                    } else {
+                        el.classList.add('flash-down');
+                        trendHtml = `<span class="trend-arrow ${isPositiveTrend ? 'positive-trend' : 'negative-trend'}">▼</span>`;
+                    }
+                    el.dataset.trend = trendHtml;
+                }
+            } else if (el.dataset.trend) {
+                trendHtml = el.dataset.trend;
             }
+            
             el.dataset.val = newValue;
-            el.textContent = formatFunc(newValue);
+            el.innerHTML = formatFunc(newValue) + trendHtml;
         };
 
         function copyInviteLink(code) {
@@ -1874,6 +1901,8 @@
             const screenEl = document.getElementById('pc-crt-screen');
             if (screenEl && !screenEl.classList.contains('screen-off')) {
                 document.getElementById('crt-val-rev').textContent = '$' + kpis.company_revenue.toLocaleString(undefined, {maximumFractionDigits: 0});
+                const goalMillions = kpis.goal_revenue / 1000000;
+                document.getElementById('crt-val-goal').textContent = '$' + (goalMillions % 1 === 0 ? goalMillions.toFixed(0) : goalMillions.toFixed(1)) + 'M';
                 document.getElementById('crt-val-uptime').textContent = Number(kpis.server_uptime).toFixed(1) + '%';
                 document.getElementById('crt-val-morale').textContent = kpis.employee_morale + '%';
             }
@@ -2393,9 +2422,16 @@
                 powerSwitch.style.backgroundColor = '#2d6a4f';
                 // Sync values immediately
                 const revText = document.getElementById('kpi-revenue').textContent;
+                const goalText = document.getElementById('kpi-goal').textContent;
                 const uptimeText = document.getElementById('kpi-uptime').textContent;
                 const moraleText = document.getElementById('kpi-morale').textContent;
+                
                 document.getElementById('crt-val-rev').textContent = revText;
+                
+                const goalNum = parseInt(goalText.replace(/[^0-9]/g, '')) || 0;
+                const goalM = goalNum / 1000000;
+                document.getElementById('crt-val-goal').textContent = '$' + (goalM % 1 === 0 ? goalM.toFixed(0) : goalM.toFixed(1)) + 'M';
+                
                 document.getElementById('crt-val-uptime').textContent = uptimeText;
                 document.getElementById('crt-val-morale').textContent = moraleText;
             } else {
