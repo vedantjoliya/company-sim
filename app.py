@@ -11,7 +11,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super-secret-key-for-company-sim'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///company_sim.db'
+db_uri = os.environ.get('DATABASE_URL')
+if db_uri:
+    if db_uri.startswith("postgres://"):
+        db_uri = db_uri.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///company_sim.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -1254,34 +1260,36 @@ def admin_support_players():
 
 def setup_database():
     with app.app_context():
-        # Clean up any ended sessions on startup
-        try:
-            import sqlite3
-            import os
-            db_path = os.path.join(app.instance_path, 'company_sim.db')
-            if os.path.exists(db_path):
-                conn = sqlite3.connect(db_path)
-                cursor = conn.cursor()
-                cursor.execute("PRAGMA table_info(player)")
-                columns = [info[1] for info in cursor.fetchall()]
-                if 'password_hash' not in columns:
-                    cursor.execute("ALTER TABLE player ADD COLUMN password_hash TEXT")
-                    conn.commit()
-                    print("[Database] Successfully added password_hash column to player table.")
-                
-                cursor.execute("PRAGMA table_info(chat_message)")
-                chat_columns = [info[1] for info in cursor.fetchall()]
-                if 'is_support' not in chat_columns:
-                    cursor.execute("ALTER TABLE chat_message ADD COLUMN is_support INTEGER DEFAULT 0")
-                    conn.commit()
-                    print("[Database] Successfully added is_support column to chat_message table.")
-                if 'is_global' not in chat_columns:
-                    cursor.execute("ALTER TABLE chat_message ADD COLUMN is_global INTEGER DEFAULT 0")
-                    conn.commit()
-                    print("[Database] Successfully added is_global column to chat_message table.")
-                conn.close()
-        except Exception as e:
-            print(f"[Database] Error running migrations: {e}")
+        # Run migrations only if database is SQLite
+        db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+        if db_uri.startswith('sqlite:'):
+            try:
+                import sqlite3
+                import os
+                db_path = os.path.join(app.instance_path, 'company_sim.db')
+                if os.path.exists(db_path):
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    cursor.execute("PRAGMA table_info(player)")
+                    columns = [info[1] for info in cursor.fetchall()]
+                    if 'password_hash' not in columns:
+                        cursor.execute("ALTER TABLE player ADD COLUMN password_hash TEXT")
+                        conn.commit()
+                        print("[Database] Successfully added password_hash column to player table.")
+                    
+                    cursor.execute("PRAGMA table_info(chat_message)")
+                    chat_columns = [info[1] for info in cursor.fetchall()]
+                    if 'is_support' not in chat_columns:
+                        cursor.execute("ALTER TABLE chat_message ADD COLUMN is_support INTEGER DEFAULT 0")
+                        conn.commit()
+                        print("[Database] Successfully added is_support column to chat_message table.")
+                    if 'is_global' not in chat_columns:
+                        cursor.execute("ALTER TABLE chat_message ADD COLUMN is_global INTEGER DEFAULT 0")
+                        conn.commit()
+                        print("[Database] Successfully added is_global column to chat_message table.")
+                    conn.close()
+            except Exception as e:
+                print(f"[Database] Error running SQLite migrations: {e}")
 
         db.create_all()
         try:
@@ -1297,6 +1305,8 @@ def setup_database():
         except Exception as e:
             print(f"[Database] Error cleaning up ended sessions: {e}")
 
+# Run database setup on startup/import
+setup_database()
+
 if __name__ == '__main__':
-    setup_database()
     socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)
