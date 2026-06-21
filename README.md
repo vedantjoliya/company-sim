@@ -1,60 +1,111 @@
-# Company Simulation Game - Deployment Guide
+# CompanySim. — Real-Time Multi-Player Corporate Simulation
 
-This project is a multi-player corporate simulation game featuring real-time WebSockets communication, a live support dashboard, customizable visual themes, and 11 global languages.
-
-## Deployment Options
-
-We recommend deploying this application directly to **Render** or similar Python hosting services, as they natively support persistent databases and WebSockets (Socket.IO).
+Welcome to **CompanySim.**, a premium, real-time multi-player business simulation platform. Players take on corporate roles, complete task scenarios, upgrade their workspaces with widgets from the Gadget Shop, and compete to fulfill multi-metric victory conditions first. The entire application runs on real-time WebSockets and supports 11 global languages and 3 custom themes.
 
 ---
 
-### Deploying to Render (Recommended)
+## 🚀 Key Features
 
-Render is the easiest way to deploy this full Python application with real-time WebSockets and database persistence.
+### 1. Immersive Portals & Interactive Dashboards
+*   **Access Terminal (Landing Page)**: Immersive split-screen layout. The left control center broadcasts live simulated server telemetry and system logs, while the right panel hosts the frosted-glass access controls. Sign-up fields dynamically toggle based on session status (new registration vs. password verification for returning player reconnection).
+*   **Player Terminal**: Real-time business KPI bar displaying metrics (Revenue, Morale, Quality, Uptime, Customer Satisfaction, Market Share, Tech Debt, and Active Users) adorned with financial-style dynamic trend arrows (`▲` or `▼`) to track metric growth/drops in real time.
+*   **Admin Control Room**: Comprehensive command dashboard. Admins can view aggregated global statistics, control the simulation clock (Launch, Pause, Resume, Kill), manage company nodes, and handle support requests.
 
-#### Option A: Quick Deploy (SQLite Mode)
-1. Push this repository to your GitHub account.
-2. Sign in to [Render](https://render.com/).
-3. Click **New** -> **Web Service** and connect your GitHub repository.
-4. Set the following configurations:
-   - **Runtime**: `Python`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn --worker-class eventlet -w 1 app:app`
-5. Click **Deploy Web Service**. Render will automatically detect your WebSocket setup and deploy the app!
+### 2. Premium 3D Interactive Widgets
+*   **Draggable News 3D Television**: A fully customized 3D TV cabinet with physical antennas, power switches, tuning dial knobs, and a CRT television screen that flickers with static noise on news updates. It physically wobbles in 3D space whenever new bulletins are received. Toggles Global vs. Team filtering channels.
+*   **Diagnostics 3D Retro PC**: An interactive CRT monitor placed inside the player sidebar showing a diagnostics console. It synchronizes live revenue, uptime, morale, and goal targets in real-time. Can be grabbed and rotated in 3D space.
+*   **Sidebar Goal Card**: A dedicated glassmorphic card placed directly below the 3D PC, displaying the victory target values cleanly.
 
-*Note: In SQLite mode, the local database will reset whenever the web service restarts or redeploys unless a persistent disk is attached to the Render service.*
-
-#### Option B: Production Deploy (PostgreSQL Mode)
-To keep player data persistent without resets:
-1. Create a **PostgreSQL Database** on Render (it is free/low-cost).
-2. Create a **Web Service** for this repository.
-3. In the Web Service settings, go to the **Environment** tab.
-4. Add a new Environment Variable:
-   - **Key**: `DATABASE_URL`
-   - **Value**: *(Connect your Render PostgreSQL Database: Render will automatically bind the connection string when you link them, or you can paste the Internal Database URL here)*
-5. Use the same start command:
-   - **Start Command**: `gunicorn --worker-class eventlet -w 1 app:app`
-6. Deploy the service. The application will automatically detect the database environment, skip SQLite migrations, and create the schema on PostgreSQL!
+### 3. Localization & Personalization
+*   **11 Global Languages**: Full support for English, Spanish, Hindi, Gujarati, French, German, Chinese, Japanese, Arabic, Russian, and Portuguese, persistent across portal refreshes.
+*   **3 Visual Themes**: Swap styles instantly:
+    *   `Light Paper`: Standard clean business aesthetic.
+    *   `Midnight Dev`: Dark workspace configuration with glowing icons.
+    *   `Cyberpunk Neon`: Futuristic hot pink and purple styling.
+*   **State Persistence**: Local coordinates, collapse states of the TV, selected languages, and active visual themes are persistently cached in `localStorage`.
 
 ---
 
-### Local Installation & Testing
+## 🛠️ Technology Stack
 
-If you want to run the server locally:
+*   **Backend**: Python, Flask, Flask-SQLAlchemy (ORM), Flask-SocketIO (Real-time Events).
+*   **WSGI Server**: Eventlet, Gevent, Gunicorn (Production).
+*   **Frontend**: HTML5, Vanilla CSS3 (Custom animations, 3D transforms, glassmorphic filters), Vanilla JavaScript, Lucide icons, Chart.js (Dynamic re-coloring).
+*   **Database**: PostgreSQL (Production) / SQLite3 (Local fallback).
 
-1. Create a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-2. Install the dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the development server:
-   ```bash
-   python app.py
-   ```
-4. Access the portals:
-   - **Player Terminal**: `http://127.0.0.1:5000/`
-   - **Admin Control Room**: `http://127.0.0.1:5000/admin`
+---
+
+## 🗄️ Database Architecture
+
+The application uses an ORM schema with cascade relationships:
+*   **Session**: Holds corporate parameters (Join Code, Goal Targets, Active Status).
+*   **Player**: Holds accounts, passwords (hashed via `werkzeug`), role tags, strikes, salaries, savings, and scores.
+*   **Task**: Tracks active task configurations, questions, answers, and completion multipliers.
+*   **ChatMessage**: Feeds global and company room communication channels.
+
+---
+
+## 💻 Local Installation
+
+To run **CompanySim.** on your development machine:
+
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/vedantjoliya/company-sim.git
+    cd company-sim
+    ```
+
+2.  **Set Up Virtual Environment**:
+    ```bash
+    python -m venv venv
+    # Activate on Windows:
+    venv\Scripts\activate
+    # Activate on macOS/Linux:
+    source venv/bin/activate
+    ```
+
+3.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Run Application Server**:
+    ```bash
+    python app.py
+    ```
+    *The app will automatically initialize SQLite databases and run on `http://127.0.0.1:5000`.*
+
+5.  **Access Portals**:
+    *   **Player Access Terminal**: `http://127.0.0.1:5000/`
+    *   **Admin Control Room**: `http://127.0.0.1:5000/admin`
+
+---
+
+## ☁️ Render Cloud Deployment
+
+Render is the recommended hosting service for the WSGI WebSocket servers.
+
+### Setup Instructions
+1.  Connect your GitHub repository to **Render**.
+2.  Create a **Web Service** with the following options:
+    *   **Runtime**: `Python`
+    *   **Build Command**: `pip install -r requirements.txt`
+    *   **Start Command**: `gunicorn --worker-class eventlet -w 1 app:app`
+3.  Choose database configuration:
+    *   **SQLite Mode**: Deploy immediately. Standard databases will reset on service redeploys unless a persistent disk is attached under Render settings.
+    *   **PostgreSQL Mode**: Add an environment variable under **Environment** tab:
+        *   **Key**: `DATABASE_URL`
+        *   **Value**: `postgresql://<your_database_connection_string>`
+        *   *The schema will build automatically on the PostgreSQL DB on the first startup.*
+
+---
+
+## 👨‍💻 Developer Credits
+
+**CompanySim.** is developed and maintained by **Vedant Joliya**.
+
+*   **Portfolio**: [https://vedantjoliya.free.nf/](https://vedantjoliya.free.nf/)
+*   **GitHub**: [@vedantjoliya](https://github.com/vedantjoliya)
+
+---
+*Created with ❤️ by Vedant Joliya. Feedback and pull requests are welcome!*
