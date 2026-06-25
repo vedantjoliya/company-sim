@@ -567,9 +567,15 @@ def admin_kill(data):
 
 def get_full_admin_state():
     sessions = GameSession.query.all()
+    # Optimize: Fetch all active players in a single query to avoid N+1 database round-trips
+    all_active_players = Player.query.filter_by(status='active').all()
+    players_by_session = {}
+    for p in all_active_players:
+        players_by_session.setdefault(p.session_id, []).append(p)
+        
     data = []
     for s in sessions:
-        players = Player.query.filter_by(session_id=s.id, status='active').all()
+        players = players_by_session.get(s.id, [])
         history = json.loads(s.kpi_history) if s.kpi_history else []
         growth_rate = 0.0
         if len(history) >= 3:
