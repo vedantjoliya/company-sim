@@ -8,6 +8,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from models import db, GameSession, Player, Task, ChatMessage
 from data.roles import get_role, get_starting_roles
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.pool import NullPool
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super-secret-key-for-company-sim'
@@ -16,6 +17,11 @@ if db_uri:
     if db_uri.startswith("postgres://"):
         db_uri = db_uri.replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    # Disable connection pooling in serverless environments to prevent connection timeout hangs
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'poolclass': NullPool,
+        'pool_pre_ping': True
+    }
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///company_sim.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
