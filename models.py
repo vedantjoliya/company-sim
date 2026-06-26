@@ -10,6 +10,7 @@ class GameSession(db.Model):
     join_code = db.Column(db.String(6), unique=True, nullable=False)
     status = db.Column(db.String(20), default="waiting") 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_tick_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
     
     
     company_revenue = db.Column(db.Float, default=0.0) 

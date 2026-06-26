@@ -3,6 +3,7 @@ import json
 import random
 import uuid
 from threading import Lock
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, session, jsonify, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from models import db, GameSession, Player, Task, ChatMessage
@@ -22,6 +23,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+
+@app.before_request
+def before_request():
+    if not request.path.startswith('/static'):
+        try:
+            check_and_tick_sessions()
+        except Exception as e:
+            print(f"[BeforeRequest] Warning: lazy tick failed: {e}")
+
 
 
 with open('data/questions.json', 'r') as f:
@@ -51,90 +61,121 @@ def add_news(session_id, company_name, category, content):
         GLOBAL_NEWS.pop(0)
     socketio.emit('market_news_update', GLOBAL_NEWS)
 
+def tick_session_logic(session):
+    # 1. Update user base
+    base_growth = 0.005 + (session.customer_satisfaction / 100.0) * 0.015 + (session.product_quality / 100.0) * 0.01
+    tech_debt_penalty = (session.tech_debt / 100.0) * 0.015
+    uptime_scaling = session.server_uptime / 100.0
+    user_change = int(session.user_base * (base_growth - tech_debt_penalty) * uptime_scaling) + random.randint(-5, 10)
+    session.user_base = max(100, session.user_base + user_change)
+
+    # 2. Update company revenue
+    passive_rev = session.user_base * (session.product_quality / 100.0) * (session.server_uptime / 100.0) * random.uniform(1.0, 3.0)
+    prev_rev = session.company_revenue
+    session.company_revenue = round(session.company_revenue + passive_rev, 2)
+
+    # 3. Milestones news
+    prev_pct = prev_rev / session.goal_revenue
+    curr_pct = session.company_revenue / session.goal_revenue
+    for milestone in [0.25, 0.50, 0.75, 1.0]:
+        if prev_pct < milestone <= curr_pct:
+            add_news(session.id, session.name, 'success', f"Milestone: {session.name} reached {int(milestone*100)}% of their goal!")
+
+    # 4. Customer satisfaction
+    target_csat = int((session.product_quality + session.server_uptime) / 2)
+    csat_change = int((target_csat - session.customer_satisfaction) * 0.1) + random.choice([-1, 0, 1])
+    session.customer_satisfaction = max(10, min(100, session.customer_satisfaction + csat_change))
+
+    # 5. Tech debt
+    tech_debt_change = random.choice([0, 0, 1])
+    session.tech_debt = max(0, min(100, session.tech_debt + tech_debt_change))
+
+    # 6. Morale
+    morale_change = random.choice([-1, 0, 1])
+    if session.tech_debt > 60: morale_change -= 1
+    session.employee_morale = max(10, min(100, session.employee_morale + morale_change))
+
+    # 7. Quality
+    quality_change = random.choice([-1, 0, 1])
+    if session.tech_debt > 70: quality_change -= 1
+    session.product_quality = max(5, min(100, session.product_quality + quality_change))
+
+    # 8. Outage penalties
+    if random.random() < 0.12:
+        penalty = random.choice([
+            {'msg': 'Server Outage! Uptime dropped.', 'kpi': 'server_uptime', 'change': -random.randint(5,12)},
+            {'msg': 'Data Breach! Market share dropping.', 'kpi': 'market_share', 'change': -random.randint(2,6)},
+            {'msg': 'Bug Escape! Quality dropping.', 'kpi': 'product_quality', 'change': -random.randint(4,8)},
+        ])
+        current_val = getattr(session, penalty['kpi'])
+        setattr(session, penalty['kpi'], max(0, current_val + penalty['change']))
+        session.company_revenue = max(0, session.company_revenue - 30000)
+        socketio.emit('chat_message', {
+            'is_system': True,
+            'content': f"[ALERT] {penalty['msg']}",
+            'is_penalty': True
+        }, to=session.id)
+        add_news(session.id, session.name, 'alert', f"ALERT: {session.name} suffered a {penalty['msg'].split('!')[0]}!")
+
+    # 9. Server uptime recovery
+    if session.server_uptime < 99.9:
+        session.server_uptime = min(99.9, session.server_uptime + random.uniform(0.2, 0.5))
+
+    # 10. Update players score history
+    players = Player.query.filter_by(session_id=session.id).all()
+    for p in players:
+        if p.status == 'active':
+            s_hist = json.loads(p.score_history) if p.score_history else []
+            s_hist.append({'timestamp': datetime.utcnow().strftime("%H:%M:%S"), 'score': p.score, 'savings': p.savings})
+            if len(s_hist) > 30: s_hist = s_hist[-30:]
+            p.score_history = json.dumps(s_hist)
+            emit_personal_update(p)
+
+    emit_kpis(session.id)
+
+
+def check_and_tick_sessions():
+    active_sessions = GameSession.query.filter_by(status='active').all()
+    now = datetime.utcnow()
+    updated = False
+    for session in active_sessions:
+        if not session.last_tick_at:
+            session.last_tick_at = session.created_at or now
+            db.session.commit()
+            
+        elapsed = (now - session.last_tick_at).total_seconds()
+        ticks = int(elapsed // 10)
+        if ticks > 0:
+            ticks = min(ticks, 60)  # Max 10 minutes of catch up to prevent server lockups
+            for _ in range(ticks):
+                tick_session_logic(session)
+            session.last_tick_at = session.last_tick_at + timedelta(seconds=ticks * 10)
+            updated = True
+            
+    if updated:
+        db.session.commit()
+        socketio.emit('admin_state_update', get_full_admin_state(), to='admin_room')
+        emit_global_leaderboard()
+
+
 def background_task_loop():
     """Background thread to process continuous game mechanics"""
     while True:
         socketio.sleep(10) 
-        
         with app.app_context():
-            active_sessions = GameSession.query.filter_by(status='active').all()
-            for session in active_sessions:
-                
-                
-                base_growth = 0.005 + (session.customer_satisfaction / 100.0) * 0.015 + (session.product_quality / 100.0) * 0.01
-                tech_debt_penalty = (session.tech_debt / 100.0) * 0.015
-                uptime_scaling = session.server_uptime / 100.0
-                user_change = int(session.user_base * (base_growth - tech_debt_penalty) * uptime_scaling) + random.randint(-5, 10)
-                session.user_base = max(100, session.user_base + user_change)
-
-                
-                passive_rev = session.user_base * (session.product_quality / 100.0) * (session.server_uptime / 100.0) * random.uniform(1.0, 3.0)
-                prev_rev = session.company_revenue
-                session.company_revenue = round(session.company_revenue + passive_rev, 2)
-
-                
-                prev_pct = prev_rev / session.goal_revenue
-                curr_pct = session.company_revenue / session.goal_revenue
-                for milestone in [0.25, 0.50, 0.75, 1.0]:
-                    if prev_pct < milestone <= curr_pct:
-                        add_news(session.id, session.name, 'success', f"Milestone: {session.name} reached {int(milestone*100)}% of their goal!")
-
-                
-                target_csat = int((session.product_quality + session.server_uptime) / 2)
-                csat_change = int((target_csat - session.customer_satisfaction) * 0.1) + random.choice([-1, 0, 1])
-                session.customer_satisfaction = max(10, min(100, session.customer_satisfaction + csat_change))
-
-                
-                tech_debt_change = random.choice([0, 0, 1])
-                session.tech_debt = max(0, min(100, session.tech_debt + tech_debt_change))
-
-                
-                morale_change = random.choice([-1, 0, 1])
-                if session.tech_debt > 60: morale_change -= 1
-                session.employee_morale = max(10, min(100, session.employee_morale + morale_change))
-
-                
-                quality_change = random.choice([-1, 0, 1])
-                if session.tech_debt > 70: quality_change -= 1
-                session.product_quality = max(5, min(100, session.product_quality + quality_change))
-
-                
-                if random.random() < 0.12:
-                    penalty = random.choice([
-                        {'msg': 'Server Outage! Uptime dropped.', 'kpi': 'server_uptime', 'change': -random.randint(5,12)},
-                        {'msg': 'Data Breach! Market share dropping.', 'kpi': 'market_share', 'change': -random.randint(2,6)},
-                        {'msg': 'Bug Escape! Quality dropping.', 'kpi': 'product_quality', 'change': -random.randint(4,8)},
-                    ])
-                    current_val = getattr(session, penalty['kpi'])
-                    setattr(session, penalty['kpi'], max(0, current_val + penalty['change']))
-                    session.company_revenue = max(0, session.company_revenue - 30000)
-                    socketio.emit('chat_message', {
-                        'is_system': True,
-                        'content': f"[ALERT] {penalty['msg']}",
-                        'is_penalty': True
-                    }, to=session.id)
-                    add_news(session.id, session.name, 'alert', f"ALERT: {session.name} suffered a {penalty['msg'].split('!')[0]}!")
-
-                
-                if session.server_uptime < 99.9:
-                    session.server_uptime = min(99.9, session.server_uptime + random.uniform(0.2, 0.5))
-
-                
-                from datetime import datetime
-                players = Player.query.filter_by(session_id=session.id).all()
-                for p in players:
-                    if p.status == 'active':
-                        s_hist = json.loads(p.score_history) if p.score_history else []
-                        s_hist.append({'timestamp': datetime.utcnow().strftime("%H:%M:%S"), 'score': p.score, 'savings': p.savings})
-                        if len(s_hist) > 30: s_hist = s_hist[-30:]
-                        p.score_history = json.dumps(s_hist)
-                        
-                        emit_personal_update(p)
-
-                emit_kpis(session.id)
-            db.session.commit()
-            update_admin_players()
-            emit_global_leaderboard()
+            try:
+                active_sessions = GameSession.query.filter_by(status='active').all()
+                updated = False
+                for session in active_sessions:
+                    tick_session_logic(session)
+                    session.last_tick_at = datetime.utcnow()
+                    updated = True
+                if updated:
+                    db.session.commit()
+                    update_admin_players()
+                    emit_global_leaderboard()
+            except Exception as e:
+                print(f"[Background Task] Error: {e}")
 
 @socketio.on('buy_gadget')
 def buy_gadget(data):
@@ -282,6 +323,52 @@ def create_session():
     db.session.commit()
     socketio.emit('admin_state_update', get_full_admin_state(), to='admin_room')
     return jsonify({"success": True, "session_id": session_id})
+
+@app.route('/api/admin/state')
+def api_admin_state():
+    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+    db_type = "PostgreSQL" if db_uri.startswith("postgresql") else "SQLite"
+    is_vercel = "true" if os.environ.get('VERCEL') or os.environ.get('NOW_BUILDER') else "false"
+    return jsonify({
+        "companies": get_full_admin_state(),
+        "system_status": {
+            "database_type": db_type,
+            "is_vercel": is_vercel,
+            "db_url_set": "true" if os.environ.get('DATABASE_URL') else "false"
+        }
+    })
+
+@app.route('/api/admin/action', methods=['POST'])
+def api_admin_action():
+    data = request.json or {}
+    action = data.get('action')
+    session_id = data.get('session_id')
+    player_id = data.get('player_id')
+    
+    if action == 'start_all':
+        admin_start_all()
+    elif action == 'start_company':
+        admin_start_company({'session_id': session_id})
+    elif action == 'pause_company':
+        admin_pause_company({'session_id': session_id})
+    elif action == 'resume_company':
+        admin_resume_company({'session_id': session_id})
+    elif action == 'kill_company':
+        admin_kill({'session_id': session_id})
+    elif action == 'pause_all':
+        admin_pause_all()
+    elif action == 'resume_all':
+        admin_resume_all()
+    elif action == 'kill_all':
+        admin_kill_all()
+    elif action == 'delete_company':
+        admin_delete_company({'session_id': session_id})
+    elif action == 'kick_player':
+        admin_kick_player({'player_id': player_id})
+    else:
+        return jsonify({"success": False, "error": "Unknown action"}), 400
+        
+    return jsonify({"success": True})
 
 @app.route('/admin')
 def admin_dashboard():
@@ -1287,9 +1374,67 @@ def setup_database():
                         cursor.execute("ALTER TABLE chat_message ADD COLUMN is_global INTEGER DEFAULT 0")
                         conn.commit()
                         print("[Database] Successfully added is_global column to chat_message table.")
+
+                    cursor.execute("PRAGMA table_info(game_session)")
+                    session_columns = [info[1] for info in cursor.fetchall()]
+                    if 'last_tick_at' not in session_columns:
+                        cursor.execute("ALTER TABLE game_session ADD COLUMN last_tick_at TIMESTAMP")
+                        conn.commit()
+                        print("[Database] Successfully added last_tick_at column to game_session table.")
                     conn.close()
             except Exception as e:
                 print(f"[Database] Error running SQLite migrations: {e}")
+        else:
+            # Postgres / other SQL database migrations
+            # First create tables if they do not exist
+            db.create_all()
+            
+            # Check player table columns
+            try:
+                db.session.execute(db.text("SELECT password_hash FROM player LIMIT 1"))
+            except Exception:
+                db.session.rollback()
+                try:
+                    db.session.execute(db.text("ALTER TABLE player ADD COLUMN password_hash VARCHAR(256)"))
+                    db.session.commit()
+                    print("[Database] Successfully added password_hash column to player table.")
+                except Exception as ex:
+                    print(f"[Database] Error adding password_hash column: {ex}")
+            
+            # Check chat_message columns
+            try:
+                db.session.execute(db.text("SELECT is_support FROM chat_message LIMIT 1"))
+            except Exception:
+                db.session.rollback()
+                try:
+                    db.session.execute(db.text("ALTER TABLE chat_message ADD COLUMN is_support BOOLEAN DEFAULT FALSE"))
+                    db.session.commit()
+                    print("[Database] Successfully added is_support column to chat_message table.")
+                except Exception as ex:
+                    print(f"[Database] Error adding is_support column: {ex}")
+            
+            try:
+                db.session.execute(db.text("SELECT is_global FROM chat_message LIMIT 1"))
+            except Exception:
+                db.session.rollback()
+                try:
+                    db.session.execute(db.text("ALTER TABLE chat_message ADD COLUMN is_global BOOLEAN DEFAULT FALSE"))
+                    db.session.commit()
+                    print("[Database] Successfully added is_global column to chat_message table.")
+                except Exception as ex:
+                    print(f"[Database] Error adding is_global column: {ex}")
+
+            # Check game_session last_tick_at
+            try:
+                db.session.execute(db.text("SELECT last_tick_at FROM game_session LIMIT 1"))
+            except Exception:
+                db.session.rollback()
+                try:
+                    db.session.execute(db.text("ALTER TABLE game_session ADD COLUMN last_tick_at TIMESTAMP"))
+                    db.session.commit()
+                    print("[Database] Successfully added last_tick_at column to game_session table.")
+                except Exception as ex:
+                    print(f"[Database] Error adding last_tick_at column: {ex}")
 
         db.create_all()
         try:

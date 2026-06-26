@@ -894,7 +894,25 @@
         });
 
         
-        socket.on('admin_state_update', (companies) => {
+        function updateSystemStatusUI(status) {
+            document.getElementById('status-db-type').textContent = status.database_type;
+            
+            const isVercel = status.is_vercel === "true";
+            document.getElementById('status-env').textContent = isVercel ? "Vercel Serverless" : "Local / Standard";
+            
+            document.getElementById('status-tick-mode').textContent = isVercel ? "Retroactive / Lazy" : "Threaded + Lazy";
+            
+            const warningEl = document.getElementById('sqlite-warning');
+            if (warningEl) {
+                if (isVercel && status.database_type === "SQLite") {
+                    warningEl.style.display = 'block';
+                } else {
+                    warningEl.style.display = 'none';
+                }
+            }
+        }
+
+        function updateAdminStateUI(companies) {
             
             let totalPlayers = 0;
             let globalRevenue = 0.0;
@@ -1068,6 +1086,10 @@
             updateComparisonChart(companies);
             renderLeaderboards(companies);
             lucide.createIcons();
+        }
+
+        socket.on('admin_state_update', (companies) => {
+            updateAdminStateUI(companies);
         });
 
         
@@ -1259,6 +1281,7 @@
             translatePage(savedLang);
             changeTheme(savedTheme);
             lucide.createIcons();
+            loadAdminState();
         });
     </script>
 </body>
