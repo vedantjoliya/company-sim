@@ -136,7 +136,7 @@
     </style>
 </head>
 <body class="game-body">
-    <!-- Top KPI Bar for admin aggregate values -->
+    
     <header class="kpi-header glass-panel">
         <div class="kpi-box">
             <span class="kpi-label"><i data-lucide="globe" class="inline-icon"></i> Active Nodes</span>
@@ -173,7 +173,7 @@
     </header>
 
     <div class="game-layout">
-        <!-- Sidebar-left: Admin Info & Tabs -->
+        
         <aside class="sidebar-left glass-panel">
             <div class="sidebar-logo-area">
                 <i data-lucide="cpu" class="sidebar-logo-icon"></i>
@@ -196,14 +196,14 @@
             </nav>
         </aside>
 
-        <!-- Main Content Area with Dynamic Views -->
+        
         <main class="main-content glass-panel">
             
-            <!-- 1. Global Overview View -->
+            
             <div id="view-overview" class="view-section active">
                 <h2 data-translate="tab_overview"><i data-lucide="layout-grid" class="inline-icon"></i> Global Overview</h2>
                 
-                <!-- Global Admin Controls -->
+                
                 <div class="glass-panel" style="padding: 20px; background: var(--card-bg-solid); margin-bottom: 25px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
                     <button class="btn-primary" onclick="createCompany()"><i data-lucide="plus-circle" class="inline-icon"></i> Create Company Node</button>
                     <button class="btn-success" onclick="startCompetition()"><i data-lucide="play" class="inline-icon"></i> Launch Global Simulation</button>
@@ -212,7 +212,7 @@
                     <button class="btn-danger" onclick="killAll()"><i data-lucide="x-circle" class="inline-icon"></i> Kill All</button>
                 </div>
 
-                <!-- Market news feed -->
+                
                 <div class="news-container">
                     <div class="news-header">
                         <span><i data-lucide="newspaper" class="inline-icon"></i> The Market Newz Feed</span>
@@ -223,7 +223,7 @@
                     </div>
                 </div>
 
-                <!-- Global Comparison Charts -->
+                
                 <div class="admin-charts-row">
                     <div class="admin-chart-card">
                         <canvas id="global-revenue-chart"></canvas>
@@ -234,21 +234,21 @@
                 </div>
             </div>
 
-            <!-- 2. Company Nodes View -->
+            
             <div id="view-companies" class="view-section">
                 <h2 data-translate="tab_companies"><i data-lucide="server" class="inline-icon"></i> Company Nodes</h2>
                 
                 <div class="company-grid" id="companies-container">
-                    <!-- Injected via state updates -->
+                    
                 </div>
             </div>
 
-            <!-- 3. Leaderboard View -->
+            
             <div id="view-leaderboard" class="view-section">
                 <h2 data-translate="tab_leaderboard"><i data-lucide="bar-chart-3" class="inline-icon"></i> Leaderboard & Rankings</h2>
                 
                 <div class="admin-charts-row" style="margin-top: 20px;">
-                    <!-- Company Leaderboard -->
+                    
                     <div class="admin-chart-card" style="height: auto; min-height: 420px; display: flex; flex-direction: column;">
                         <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;"><i data-lucide="award" class="inline-icon"></i> Company Standings</h3>
                         <div style="flex: 1; overflow-y: auto;">
@@ -269,7 +269,7 @@
                         </div>
                     </div>
 
-                    <!-- Player Leaderboard -->
+                    
                     <div class="admin-chart-card" style="height: auto; min-height: 420px; display: flex; flex-direction: column;">
                         <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;"><i data-lucide="trophy" class="inline-icon"></i> Global MVP Leaderboard</h3>
                         <div style="flex: 1; overflow-y: auto;">
@@ -293,17 +293,17 @@
                 </div>
             </div>
 
-            <!-- 4. Support Tickets View -->
+            
             <div id="view-support" class="view-section">
                 <h2 data-translate="tab_support"><i data-lucide="help-circle" class="inline-icon"></i> Support Tickets Portal</h2>
                 
                 <div style="display: flex; gap: 20px; height: 500px;">
-                    <!-- Player list -->
+                    
                     <div class="glass-panel" style="width: 320px; padding: 20px; overflow-y: auto; background: var(--card-bg-solid); display: flex; flex-direction: column; gap: 10px;" id="support-players-list">
-                        <!-- Populated by JS -->
+                        
                     </div>
                     
-                    <!-- Chat box -->
+                    
                     <div class="glass-panel" style="flex: 1; padding: 25px; background: var(--card-bg-solid); display: flex; flex-direction: column; min-height: 100%;">
                         <div id="support-active-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; font-weight: 600; font-family: var(--font-heading); font-size: 1.25rem;">
                             Select a player to open support thread
@@ -321,12 +321,12 @@
                 </div>
             </div>
 
-            <!-- 5. Settings View -->
+            
             <div id="view-settings" class="view-section">
                 <h2 data-translate="tab_settings"><i data-lucide="settings" class="inline-icon"></i> Settings</h2>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <!-- Theme & Language selection -->
+                    
                     <div class="glass-panel" style="padding: 25px; background: var(--card-bg-solid);">
                         <h3 style="margin-bottom: 20px; font-family: var(--font-heading); font-size: 1.3rem;"><i data-lucide="palette" class="inline-icon"></i> Appearance & Language</h3>
                         
@@ -357,7 +357,7 @@
                         </div>
                     </div>
 
-                    <!-- Admin Details -->
+                    
                     <div class="glass-panel" style="padding: 25px; background: var(--card-bg-solid); display: flex; flex-direction: column; justify-content: space-between;">
                         <div>
                             <h3 style="margin-bottom: 20px; font-family: var(--font-heading); font-size: 1.3rem;"><i data-lucide="shield" class="inline-icon"></i> Security Overview</h3>
@@ -369,7 +369,7 @@
                     </div>
                 </div>
 
-                <!-- Developer Attribution Footer -->
+                
                 <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
                     Developed by <a href="https://vedantjoliya.free.nf/" target="_blank" style="color: var(--primary-color); font-weight: 600; text-decoration: underline;">Vedant Joliya</a>
                 </div>
@@ -378,7 +378,7 @@
         </main>
     </div>
 
-    <!-- Toast Notifications container -->
+    
     <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
 
     <script>
@@ -395,7 +395,7 @@
                 const diff = parseFloat(newValue) - parseFloat(oldVal);
                 if (diff !== 0 && !isNaN(diff)) {
                     el.classList.remove('flash-up', 'flash-down');
-                    void el.offsetWidth; // trigger reflow
+                    void el.offsetWidth; 
                     
                     const isUp = diff > 0;
                     let isPositiveTrend = isUp;
@@ -420,7 +420,7 @@
             el.innerHTML = formatFunc(newValue) + trendHtml;
         };
 
-        // Translations map
+        
         const translations = {
             en: {
                 tab_overview: "Global Overview",
@@ -557,7 +557,7 @@
                 const borderColor = getThemeColor('--border-color') || 'rgba(0,0,0,0.08)';
                 const cardBgSolid = getThemeColor('--card-bg-solid') || 'rgba(255,255,255,0.95)';
 
-                // Update Chart defaults
+                
                 Chart.defaults.color = textSecondary;
 
                 Object.values(Chart.instances).forEach(chart => {
@@ -762,7 +762,7 @@
             });
         }
 
-        // Support Chat functions
+        
         let activeSupportPlayerId = null;
 
         function loadSupportPlayers() {
@@ -796,7 +796,7 @@
             document.getElementById('admin-support-input').disabled = false;
             document.getElementById('admin-support-send-btn').disabled = false;
             
-            // Re-render user buttons list to show correct active state class
+            
             document.querySelectorAll('.support-player-btn').forEach(btn => {
                 if (btn.querySelector('strong').textContent === name) {
                     btn.classList.add('active');
@@ -887,15 +887,15 @@
             if (msg.player_id === activeSupportPlayerId) {
                 appendSupportMessageUI(msg);
             }
-            // Trigger refresh support list in background to show players
+            
             if (document.getElementById('view-support').classList.contains('active')) {
                 loadSupportPlayers();
             }
         });
 
-        // Main Socket state updates
+        
         socket.on('admin_state_update', (companies) => {
-            // Aggregate values calculation
+            
             let totalPlayers = 0;
             let globalRevenue = 0.0;
             let totalMorale = 0;
@@ -934,7 +934,7 @@
 
             const container = document.getElementById('companies-container');
             
-            // Clean up deleted company cards
+            
             const currentIds = companies.map(c => c.id);
             Array.from(container.children).forEach(child => {
                 if (!currentIds.includes(child.id.replace('comp-card-', ''))) {
@@ -1001,7 +1001,7 @@
                     });
                 }
 
-                // Update text elements
+                
                 const statusSpan = document.getElementById(`comp-status-${comp.id}`);
                 statusSpan.className = `company-status status-${comp.status}`;
                 statusSpan.textContent = comp.status.toUpperCase();
@@ -1048,7 +1048,7 @@
                 
                 document.getElementById(`comp-actions-${comp.id}`).innerHTML = actionHtml;
 
-                // Update Charts
+                
                 const perfChart = Chart.getChart(`chart-perf-${comp.id}`);
                 if (perfChart) {
                     perfChart.data.labels = comp.players.map(p => p.name);
@@ -1070,7 +1070,7 @@
             lucide.createIcons();
         });
 
-        // Global Chart Logic
+        
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.color = 'var(--text-secondary)';
         
@@ -1252,7 +1252,7 @@
             lucide.createIcons();
         });
 
-        // Initialize persistent settings on startup
+        
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('company_sim_lang') || 'en';
             const savedTheme = localStorage.getItem('company_sim_theme') || 'default';

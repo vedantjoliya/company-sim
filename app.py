@@ -23,11 +23,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
-# Load Questions into memory
+
 with open('data/questions.json', 'r') as f:
     QUESTIONS = json.load(f)
 
-# Global lock for background thread
+
 thread_lock = Lock()
 background_thread = None
 
@@ -43,7 +43,7 @@ def add_news(session_id, company_name, category, content):
         'timestamp': timestamp,
         'session_id': session_id,
         'company_name': company_name,
-        'category': category, # 'growth', 'alert', 'info', 'success'
+        'category': category, 
         'content': content
     }
     GLOBAL_NEWS.append(item)
@@ -54,51 +54,51 @@ def add_news(session_id, company_name, category, content):
 def background_task_loop():
     """Background thread to process continuous game mechanics"""
     while True:
-        socketio.sleep(10) # Run every 10 seconds
+        socketio.sleep(10) 
         
         with app.app_context():
             active_sessions = GameSession.query.filter_by(status='active').all()
             for session in active_sessions:
-                # Organic drifts
-                # 1. User Base drift
+                
+                
                 base_growth = 0.005 + (session.customer_satisfaction / 100.0) * 0.015 + (session.product_quality / 100.0) * 0.01
                 tech_debt_penalty = (session.tech_debt / 100.0) * 0.015
                 uptime_scaling = session.server_uptime / 100.0
                 user_change = int(session.user_base * (base_growth - tech_debt_penalty) * uptime_scaling) + random.randint(-5, 10)
                 session.user_base = max(100, session.user_base + user_change)
 
-                # 2. Revenue passive growth
+                
                 passive_rev = session.user_base * (session.product_quality / 100.0) * (session.server_uptime / 100.0) * random.uniform(1.0, 3.0)
                 prev_rev = session.company_revenue
                 session.company_revenue = round(session.company_revenue + passive_rev, 2)
 
-                # Check milestones
+                
                 prev_pct = prev_rev / session.goal_revenue
                 curr_pct = session.company_revenue / session.goal_revenue
                 for milestone in [0.25, 0.50, 0.75, 1.0]:
                     if prev_pct < milestone <= curr_pct:
                         add_news(session.id, session.name, 'success', f"Milestone: {session.name} reached {int(milestone*100)}% of their goal!")
 
-                # 3. Customer Satisfaction drift
+                
                 target_csat = int((session.product_quality + session.server_uptime) / 2)
                 csat_change = int((target_csat - session.customer_satisfaction) * 0.1) + random.choice([-1, 0, 1])
                 session.customer_satisfaction = max(10, min(100, session.customer_satisfaction + csat_change))
 
-                # 4. Tech Debt drift
+                
                 tech_debt_change = random.choice([0, 0, 1])
                 session.tech_debt = max(0, min(100, session.tech_debt + tech_debt_change))
 
-                # 5. Morale drift
+                
                 morale_change = random.choice([-1, 0, 1])
                 if session.tech_debt > 60: morale_change -= 1
                 session.employee_morale = max(10, min(100, session.employee_morale + morale_change))
 
-                # 6. Product Quality drift
+                
                 quality_change = random.choice([-1, 0, 1])
                 if session.tech_debt > 70: quality_change -= 1
                 session.product_quality = max(5, min(100, session.product_quality + quality_change))
 
-                # Apply random events
+                
                 if random.random() < 0.12:
                     penalty = random.choice([
                         {'msg': 'Server Outage! Uptime dropped.', 'kpi': 'server_uptime', 'change': -random.randint(5,12)},
@@ -115,11 +115,11 @@ def background_task_loop():
                     }, to=session.id)
                     add_news(session.id, session.name, 'alert', f"ALERT: {session.name} suffered a {penalty['msg'].split('!')[0]}!")
 
-                # Restore uptime slowly if it was penalized
+                
                 if session.server_uptime < 99.9:
                     session.server_uptime = min(99.9, session.server_uptime + random.uniform(0.2, 0.5))
 
-                # Record score history (no passive salary payment)
+                
                 from datetime import datetime
                 players = Player.query.filter_by(session_id=session.id).all()
                 for p in players:
@@ -154,7 +154,7 @@ def buy_gadget(data):
             gadgets.append(gadget)
             player.gadgets_owned = json.dumps(gadgets)
             
-            # Boost score slightly as a perk
+            
             player.score += 50
             db.session.commit()
             emit_personal_update(player)
@@ -172,13 +172,13 @@ def buy_gadget(data):
             emit('gadget_bought', {'success': False, 'error': 'Insufficient savings'})
 
 def emit_kpis(session_id):
-    # Emit to the specific company
+    
     g_session = GameSession.query.get(session_id)
     if not g_session: return
     
     from datetime import datetime
     
-    # Calculate growth rate and performance score
+    
     history = json.loads(g_session.kpi_history) if g_session.kpi_history else []
     growth_rate = 0.0
     if len(history) >= 3:
@@ -206,9 +206,9 @@ def emit_kpis(session_id):
         'timestamp': datetime.utcnow().strftime("%H:%M:%S")
     }
     
-    # Update history
+    
     history.append(data)
-    # Keep last 30 data points (e.g. 5 minutes at 10s intervals)
+    
     if len(history) > 30:
         history = history[-30:]
     g_session.kpi_history = json.dumps(history)
@@ -260,7 +260,7 @@ def index():
 
 @app.route('/create_session', methods=['POST'])
 def create_session():
-    # Admin creates a new company
+    
     goal = request.json.get('goal_revenue', 10000000) if request.json else 10000000
     session_id = str(uuid.uuid4())
     
@@ -328,20 +328,20 @@ def join_game():
     if g_session.status == 'ended':
         return jsonify({"success": False, "error": "Session has ended."})
         
-    # Reconnection check
+    
     existing_player = Player.query.filter_by(session_id=g_session.id, name=name).first()
     if existing_player:
         if existing_player.status == 'fired':
             return jsonify({"success": False, "error": "This player has been fired from the company."})
         
-        # Verify password
+        
         if existing_player.password_hash:
             if not password:
                 return jsonify({"success": False, "error": "Password is required to sign in."})
             if not check_password_hash(existing_player.password_hash, password):
                 return jsonify({"success": False, "error": "Incorrect password. Please try again."})
         else:
-            # Backward compatibility: set password if not set
+            
             if password:
                 existing_player.password_hash = generate_password_hash(password)
                 db.session.commit()
@@ -349,7 +349,7 @@ def join_game():
         session['player_id'] = existing_player.id
         return jsonify({"success": True, "session_id": g_session.id, "player_id": existing_player.id})
         
-    # Registration of a new player
+    
     if not password:
         return jsonify({"success": False, "error": "Password is required for first-time joining."})
     if password != confirm_password:
@@ -399,9 +399,9 @@ def api_roles():
 def fired():
     return render_template('fired.html')
 
-# -------------------------
-# SOCKET.IO HANDLERS
-# -------------------------
+
+
+
 
 @socketio.on('connect')
 def handle_connect():
@@ -411,7 +411,7 @@ def handle_connect():
             background_thread = socketio.start_background_task(background_task_loop)
 
 def update_admin_players():
-    # Deprecated for single room, now we broadcast full state
+    
     socketio.emit('admin_state_update', get_full_admin_state(), to='admin_room')
 
 @socketio.on('join')
@@ -428,7 +428,7 @@ def on_join_room(data):
     player = Player.query.get(player_id)
     if player:
         join_room(player.session_id)
-        join_room(player.id) # join personal room for support chats
+        join_room(player.id) 
         player.socket_id = request.sid
         db.session.commit()
         update_admin_players()
@@ -516,7 +516,7 @@ def admin_kill_all():
     sessions = GameSession.query.all()
     for s in sessions:
         socketio.emit('game_killed', {}, to=s.id)
-        # Delete company and all associated rows
+        
         Task.query.filter_by(session_id=s.id).delete()
         ChatMessage.query.filter_by(session_id=s.id).delete()
         Player.query.filter_by(session_id=s.id).delete()
@@ -533,7 +533,7 @@ def admin_delete_company(data):
         Player.query.filter_by(session_id=session_id).delete()
         GameSession.query.filter_by(id=session_id).delete()
         db.session.commit()
-        socketio.emit('you_are_fired', {}, to=session_id) # Boot everyone
+        socketio.emit('you_are_fired', {}, to=session_id) 
         update_admin_players()
 
 @socketio.on('admin_kick_player')
@@ -557,7 +557,7 @@ def admin_kill(data):
     g_session = GameSession.query.get(session_id)
     if g_session:
         socketio.emit('game_killed', {}, to=session_id)
-        # Delete company and all associated rows
+        
         Task.query.filter_by(session_id=session_id).delete()
         ChatMessage.query.filter_by(session_id=session_id).delete()
         Player.query.filter_by(session_id=session_id).delete()
@@ -843,7 +843,7 @@ def answer_question(data):
         rewards = points_map.get(diff, points_map['mcqs'])
 
         if is_correct:
-            # Calculate gadget boosts
+            
             gadgets = json.loads(player.gadgets_owned) if player.gadgets_owned else []
             gadget_multipliers = {
                 'Mechanical Keyboard': 0.10,
@@ -869,12 +869,12 @@ def answer_question(data):
             revenue_gain = int(base_revenue_gain * total_multiplier)
             g_session.company_revenue += revenue_gain
             
-            # Earn task-based salary
+            
             base_cash_earned = base_win * 20.0
             cash_earned = base_cash_earned * total_multiplier
             player.savings += cash_earned
             
-            # Apply task-specific KPI improvements
+            
             kpi_msg = ""
             if diff == 'refactor' or diff == 'calculation':
                 g_session.tech_debt = max(0, g_session.tech_debt - 15)
@@ -949,7 +949,7 @@ def answer_question(data):
                 }, to=g_session.id)
                 add_news(g_session.id, g_session.name, 'success', f"SECURITY: {player.name} patched vulnerabilities at {g_session.name}!")
             
-            # Check Promotion
+            
             role = get_role(player.role_id)
             if role and role.get('next_role'):
                 can_promote = False
@@ -992,7 +992,7 @@ def answer_question(data):
                 g_session.server_uptime >= 99.0 and 
                 g_session.tech_debt <= 15):
                 
-                # Retrieve active sessions participating in the competition
+                
                 active_sessions = GameSession.query.all()
                 company_scores = []
                 for s in active_sessions:
@@ -1008,7 +1008,7 @@ def answer_question(data):
                 winner = winner_data['session']
                 winner_points = winner_data['points']
                 
-                # Notify players in each participating session
+                
                 for s in active_sessions:
                     is_winner = (s.id == winner.id)
                     if s.id == g_session.id:
@@ -1025,13 +1025,13 @@ def answer_question(data):
                         'is_penalty': not is_winner
                     }, to=s.id)
                     
-                    # Notify admin and news feed
+                    
                     add_news(s.id, s.name, 'success' if is_winner else 'alert', f"VICTORY: {winner.name} won the game with {winner_points} points!")
                     
-                    # Boot players
+                    
                     socketio.emit('game_killed', {}, to=s.id)
 
-                # Delete all company database rows
+                
                 for s in active_sessions:
                     Task.query.filter_by(session_id=s.id).delete()
                     ChatMessage.query.filter_by(session_id=s.id).delete()
@@ -1041,14 +1041,14 @@ def answer_question(data):
                 db.session.commit()
                 update_admin_players()
         else:
-            # Penalize player score and company revenue
+            
             player.score += rewards['lose']
             g_session.company_revenue = max(0.0, g_session.company_revenue + (rewards['lose'] * 5000))
             
-            # Increment strike count
+            
             player.strikes += 1
             
-            # Apply task-specific KPI failures or normal ones
+            
             if diff == 'refactor' or diff == 'calculation':
                 g_session.tech_debt = min(100, g_session.tech_debt + 8)
                 g_session.product_quality = max(5, g_session.product_quality - 3)
@@ -1069,7 +1069,7 @@ def answer_question(data):
                 g_session.customer_satisfaction = max(10, g_session.customer_satisfaction - 8)
                 g_session.server_uptime = max(50.0, round(g_session.server_uptime - 4.0, 1))
             else:
-                # Normal penalties
+                
                 g_session.employee_morale = max(10, g_session.employee_morale - 3)
                 g_session.product_quality = max(5, g_session.product_quality - 3)
                 g_session.tech_debt = min(100, g_session.tech_debt + 4)
@@ -1077,18 +1077,18 @@ def answer_question(data):
             db.session.commit()
             
             if player.strikes >= 3:
-                # Apply a severe penalty to company metrics due to the major incident
+                
                 g_session.employee_morale = max(10, g_session.employee_morale - 15)
                 g_session.product_quality = max(5, g_session.product_quality - 15)
                 g_session.server_uptime = max(50.0, round(g_session.server_uptime - 10.0, 1))
                 g_session.customer_satisfaction = max(10, g_session.customer_satisfaction - 15)
                 g_session.tech_debt = min(100, g_session.tech_debt + 20)
                 
-                # Reset strikes count to 0
+                
                 player.strikes = 0
                 db.session.commit()
                 
-                # Notify the room of the crash
+                
                 socketio.emit('chat_message', {
                     'is_system': True,
                     'content': f"[CRITICAL FAILURE] {player.name} triggered a major production incident! Company stats penalized.",
@@ -1160,7 +1160,7 @@ def change_username():
     player.name = new_name
     db.session.commit()
     
-    # Broadcast name change
+    
     socketio.emit('chat_message', {
         'is_system': True,
         'content': f"[SYS] {old_name} changed their username to {new_name}.",
@@ -1260,7 +1260,7 @@ def admin_support_players():
 
 def setup_database():
     with app.app_context():
-        # Run migrations only if database is SQLite
+        
         db_uri = app.config['SQLALCHEMY_DATABASE_URI']
         if db_uri.startswith('sqlite:'):
             try:
@@ -1305,7 +1305,7 @@ def setup_database():
         except Exception as e:
             print(f"[Database] Error cleaning up ended sessions: {e}")
 
-# Run database setup on startup/import
+
 setup_database()
 
 if __name__ == '__main__':

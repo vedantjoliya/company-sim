@@ -180,7 +180,7 @@
             overflow-y: auto;
             position: relative;
         }
-        /* Pulse dot */
+        
         .pulse-dot {
             width: 8px;
             height: 8px;
@@ -203,7 +203,7 @@
             50% { transform: scale(1.2); opacity: 0.6; }
             100% { transform: scale(0.9); opacity: 1; }
         }
-        /* Mobile responsive adjustments */
+        
         @media (max-width: 960px) {
             .landing-wrapper {
                 flex-direction: column;
@@ -231,7 +231,7 @@
 </head>
 <body class="landing-body">
     <div class="landing-wrapper">
-        <!-- Left Side: Simulation Teaser Panel -->
+        
         <div class="teaser-panel">
             <div class="teaser-header">
                 <i data-lucide="cpu" class="teaser-logo"></i>
@@ -263,12 +263,12 @@
             <div class="teaser-console">
                 <div style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 4px;">Simulation Event Log</div>
                 <div class="teaser-console-log" id="teaser-console-log">
-                    <!-- Logs will tick here -->
+                    
                 </div>
             </div>
         </div>
 
-        <!-- Right Side: Access Terminal Card -->
+        
         <div class="landing-container glass-panel">
             <h2 style="font-family: var(--font-heading); margin-bottom: 5px; font-size: 1.8rem; font-weight: 600;">Access Terminal</h2>
             <p class="subtitle" data-translate="subtitle">Join a session or initialize a new simulation environment.</p>
@@ -278,7 +278,7 @@
                 <button class="tab-btn" id="btn-tab-create" onclick="showTab('create')" data-translate="tab_admin">Admin Controls</button>
             </div>
 
-            <!-- Join Session Tab -->
+            
             <div id="join-tab" class="tab-content active">
                 <div class="input-group">
                     <label for="player-name" data-translate="label_name">Your Name</label>
@@ -293,7 +293,7 @@
                 <div class="input-group" id="role-group">
                     <label for="role-select" data-translate="label_role">Select Role</label>
                     <select id="role-select">
-                        <!-- Populated by JS -->
+                        
                     </select>
                 </div>
                 
@@ -311,7 +311,7 @@
                 <p id="join-error" class="error-text" style="margin-top: 8px; text-align: center; font-weight: 600;"></p>
             </div>
 
-            <!-- Admin Controls Tab -->
+            
             <div id="create-tab" class="tab-content">
                 <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;" data-translate="admin_desc">
                     Create a new simulation session. As an administrator, you will manage the game state and monitor player performance.
@@ -319,7 +319,7 @@
                 <button class="btn-primary w-100" onclick="createSession()" data-translate="btn_create">Create Session</button>
             </div>
             
-            <!-- Theme/Language persistent indicator on landing page -->
+            
             <div style="margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 15px; font-size: 0.8rem; color: var(--text-secondary);">
                 <span id="terminal-status"><i data-lucide="terminal" class="inline-icon" style="width: 12px; height: 12px;"></i> Ready</span>
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -532,14 +532,14 @@
                     el.textContent = dictionary[key];
                 }
             });
-            // Persist the choice to localStorage
+            
             localStorage.setItem('company_sim_lang', lang);
-            // Sync with the select element
+            
             const selectEl = document.getElementById('setting-lang');
             if (selectEl) {
                 selectEl.value = lang;
             }
-            // Re-run check player to update labels correctly if text changes
+            
             checkPlayer();
         }
 
@@ -555,7 +555,7 @@
             }
         }
 
-        // Load roles dynamically
+        
         fetch('/api/roles')
             .then(r => r.json())
             .then(roles => {
@@ -680,14 +680,14 @@
                 debouncedCheckPlayer();
             }
 
-            // Sync appearance and language from localStorage
+            
             const savedLang = localStorage.getItem('company_sim_lang') || 'en';
             const savedTheme = localStorage.getItem('company_sim_theme') || 'default';
             translatePage(savedLang);
             changeTheme(savedTheme);
             lucide.createIcons();
 
-            // Simulated metrics update
+            
             let activeNodes = 12;
             setInterval(() => {
                 if (Math.random() > 0.7) {
@@ -704,7 +704,7 @@
                 if (uptimeEl) uptimeEl.textContent = uptimeVal;
             }, 3000);
 
-            // Simulated console logger
+            
             const consoleEl = document.getElementById('teaser-console-log');
             const logTemplates = [
                 "Connection established with master node.",
@@ -733,7 +733,7 @@
                 }
             }
 
-            // Init log entries
+            
             for (let i = 0; i < 4; i++) {
                 addSimulatedLog();
             }

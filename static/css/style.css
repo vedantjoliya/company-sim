@@ -23,14 +23,14 @@
     --nav-active-text: #111111;
     --nav-hover-bg: rgba(244, 240, 236, 0.45);
 
-    /* Theme Polish variables */
+    
     --btn-primary-text: #ffffff;
     --image-blend-mode: multiply;
     --modal-overlay-bg: rgba(244, 240, 236, 0.95);
     --chat-bubble-me-bg: var(--primary-color);
     --chat-bubble-me-text: #ffffff;
 
-    /* 3D TV theme variables */
+    
     --tv-body-front: #5c5554;
     --tv-body-back: #453f3e;
     --tv-body-side-left: #4e4746;
@@ -61,14 +61,14 @@ body.theme-midnight {
     --nav-hover-bg: rgba(255, 255, 255, 0.05);
     background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) !important;
 
-    /* Theme Polish variables */
+    
     --btn-primary-text: #0f0f10;
     --image-blend-mode: normal;
     --modal-overlay-bg: rgba(15, 15, 16, 0.95);
     --chat-bubble-me-bg: var(--primary-color);
     --chat-bubble-me-text: #0f0f10;
 
-    /* 3D TV theme variables */
+    
     --tv-body-front: #252830;
     --tv-body-back: #1b1c21;
     --tv-body-side-left: #1e2026;
@@ -99,14 +99,14 @@ body.theme-cyber {
     --nav-hover-bg: rgba(138, 43, 226, 0.06);
     background-image: radial-gradient(rgba(192, 132, 252, 0.1) 1px, transparent 1px) !important;
 
-    /* Theme Polish variables */
+    
     --btn-primary-text: #0c0817;
     --image-blend-mode: normal;
     --modal-overlay-bg: rgba(12, 8, 23, 0.95);
     --chat-bubble-me-bg: var(--primary-color);
     --chat-bubble-me-text: #0c0817;
 
-    /* 3D TV theme variables */
+    
     --tv-body-front: #240a34;
     --tv-body-back: #180523;
     --tv-body-side-left: #1c0729;
@@ -118,13 +118,13 @@ body.theme-cyber {
     --tv-btn-collapse: #ff007f;
 }
 
-/* Hide scrollbars globally */
+
 * {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;  
 }
 *::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none; 
 }
 
 * {
@@ -141,7 +141,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    /* Subtle paper dot texture */
+    
     background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
     background-size: 20px 20px;
 }
@@ -162,7 +162,7 @@ h1, h2, h3, .logo {
     backdrop-filter: blur(10px);
 }
 
-/* Landing Page */
+
 .landing-body { align-items: center; justify-content: center; }
 .landing-container { padding: 50px; width: 450px; text-align: center; background: var(--panel-bg); }
 .landing-container h1 { font-size: 2.5rem; margin-bottom: 10px; }
@@ -184,7 +184,7 @@ h1, h2, h3, .logo {
 .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary); font-family: var(--font-body); border-radius: 4px; outline: none; transition: border-color 0.2s; }
 .input-group input:focus, .input-group select:focus { border-color: var(--primary-color); }
 
-/* Unified Button System */
+
 .btn-primary, .btn-success, .btn-warning, .btn-danger {
     display: inline-flex;
     align-items: center;
@@ -241,7 +241,7 @@ h1, h2, h3, .logo {
     color: var(--btn-primary-text, #fff);
 }
 
-/* Small Button Modifier */
+
 .btn-primary.btn-sm, .btn-success.btn-sm, .btn-warning.btn-sm, .btn-danger.btn-sm {
     height: 28px;
     padding: 4px 10px;
@@ -253,7 +253,7 @@ h1, h2, h3, .logo {
 .mt-20 { margin-top: 20px; }
 .error-text { color: var(--negative); margin-top: 10px; font-size: 0.85rem; }
 
-/* Admin Page */
+
 .admin-body { padding: 30px; overflow-y: auto; }
 .header { padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: var(--panel-bg); }
 .logo { font-size: 1.8rem; letter-spacing: -0.5px; }
@@ -270,7 +270,7 @@ h1, h2, h3, .logo {
 .player-list li .role { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
 .player-list li .score-badge { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
 
-/* Game Page */
+
 .game-body { padding: 20px; gap: 20px; height: 100vh; max-height: 100vh; box-sizing: border-box; }
 .kpi-header { display: flex; justify-content: space-between; padding: 20px 40px; flex-shrink: 0; background: var(--panel-bg); }
 .kpi-box { display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; }
@@ -374,7 +374,7 @@ h1, h2, h3, .logo {
 .loading-overlay.active { opacity: 0.96; pointer-events: all; }
 .loading-overlay h2 { font-family: var(--font-heading); font-size: 2.5rem; color: var(--text-primary); font-weight: 400; }
 
-/* Question Card */
+
 .question-card { border: 1px solid var(--border-color); background: var(--card-bg-solid); padding: 30px; border-radius: 8px; margin-top: 20px; }
 .domain-badge { display: inline-block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 15px; }
 .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 25px; }
@@ -386,12 +386,12 @@ h1, h2, h3, .logo {
 
 .q-result { margin-top: 20px; font-weight: 600; font-size: 1rem; }
 
-/* Progress Bar */
+
 .progress-container { width: 100%; height: 6px; background: var(--border-color); margin-bottom: 40px; border-radius: 3px; position: relative; overflow: hidden; }
 .progress-bar { height: 100%; background: var(--text-primary); width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 .progress-text { position: absolute; top: -25px; right: 0; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
 
-/* Value Animations */
+
 .flash-up { animation: flashUp 0.8s ease-out; }
 @keyframes flashUp {
     0% { color: var(--positive); transform: scale(1.1); }
@@ -422,7 +422,7 @@ h1, h2, h3, .logo {
     transform: translateY(-4px);
 }
 
-/* Category-specific card glow and border coloring on hover */
+
 .task-card.card-work:hover {
     border-color: rgba(85, 85, 85, 0.4);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04), 0 0 15px rgba(85, 85, 85, 0.1);
@@ -484,7 +484,7 @@ h1, h2, h3, .logo {
     box-shadow: 0 12px 24px rgba(42, 157, 143, 0.08), 0 0 15px rgba(42, 157, 143, 0.15);
 }
 
-/* Clipart containers specific backgrounds */
+
 .task-clipart-container {
     height: 120px;
     width: 100%;
@@ -573,7 +573,7 @@ h1, h2, h3, .logo {
 
 .task-card h4 { font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: 8px; color: var(--text-primary); font-weight: 600; }
 
-/* Double pill badging for rewards */
+
 .task-rewards {
     display: flex;
     gap: 8px;
@@ -600,7 +600,7 @@ h1, h2, h3, .logo {
 
 .task-card .desc { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4; }
 
-/* Execute button styles */
+
 .btn-execute {
     width: 100%;
     background: var(--primary-color);
@@ -633,7 +633,7 @@ h1, h2, h3, .logo {
     transform: translateY(0) scale(0.98);
 }
 
-/* Affected KPI Stats list */
+
 .affected-stats {
     font-size: 0.72rem;
     font-weight: 600;
@@ -667,7 +667,7 @@ h1, h2, h3, .logo {
 input, select { padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-body); font-size: 0.95rem; background: var(--input-bg); color: var(--text-primary); transition: border-color 0.2s; }
 input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 
-/* Real-time Market News styling */
+
 .news-container {
     background: #1a1917;
     color: #e5e0d8;
@@ -734,7 +734,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 .tag-alert { background: #9d0208; color: #fff; }
 .tag-info { background: #1982c4; color: #fff; }
 
-/* Admin dual charts split panel */
+
 .admin-charts-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -751,7 +751,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     position: relative;
 }
 
-/* Sidebar News widget */
+
 .sidebar-news-widget {
     border-top: 1px solid var(--border-color);
     padding: 15px 0 0;
@@ -795,7 +795,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 .sidebar-news-text.success { color: var(--positive); font-weight: 600; }
 .sidebar-news-text.alert { color: var(--negative); font-weight: 600; }
 
-/* Hint Button and Text Panel */
+
 .btn-hint {
     background: transparent;
     color: var(--text-secondary);
@@ -846,7 +846,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Layout & Component Declarations */
+
 .charts-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -859,11 +859,9 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     margin-bottom: 30px;
 }
 
-/* ==========================================================================
-   RESPONSIVE DESIGN (Mobiles, Tablets, Laptops)
-   ========================================================================== */
 
-/* 1. Large tablets & small laptops (1024px and below) */
+
+
 @media (max-width: 1024px) {
     body {
         overflow: auto;
@@ -910,7 +908,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
         max-height: 250px;
     }
     
-    /* Admin dashboard adjustments */
+    
     .admin-body {
         padding: 15px;
     }
@@ -924,7 +922,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     }
 }
 
-/* 2. Medium tablets & phablets (768px and below) */
+
 @media (max-width: 768px) {
     .kpi-header {
         display: grid;
@@ -983,7 +981,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     }
 }
 
-/* 3. Small mobile devices (480px and below) */
+
 @media (max-width: 480px) {
     .kpi-header {
         grid-template-columns: repeat(2, 1fr);
@@ -1035,9 +1033,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     }
 }
 
-/* ==========================================================================
-   3D INTERACTIVE RETRO PC MODEL
-   ========================================================================= */
+
 .retro-pc-container {
     width: 100%;
     height: 120px;
@@ -1086,7 +1082,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     cursor: grabbing;
 }
 
-/* Common face settings */
+
 .pc-face {
     position: absolute;
     background: #e6e3dd;
@@ -1094,7 +1090,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-sizing: border-box;
 }
 
-/* 3D Monitor Cabinet (130px W x 110px H x 100px D) */
+
 .pc-monitor {
     position: absolute;
     width: 130px;
@@ -1159,7 +1155,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     background: #d4cfc6;
 }
 
-/* CRT Screen Frame & Display */
+
 .crt-frame {
     width: 100%;
     height: 100%;
@@ -1207,7 +1203,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     font-weight: bold;
 }
 
-/* Scanlines and flicker simulation */
+
 .crt-scanlines {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -1217,7 +1213,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     pointer-events: none;
 }
 
-/* PC Control Area */
+
 .pc-controls {
     display: flex;
     justify-content: flex-end;
@@ -1254,7 +1250,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-shadow: 0 0 5px #2ecc71;
 }
 
-/* Monitor Neck and Stand */
+
 .pc-neck {
     position: absolute;
     width: 24px;
@@ -1279,7 +1275,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-shadow: 0 3px 5px rgba(0,0,0,0.1);
 }
 
-/* Keyboard Unit */
+
 .pc-keyboard {
     position: absolute;
     width: 100px;
@@ -1330,7 +1326,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     100% { opacity: 0.4; }
 }
 
-/* Premium Task Execution Modal Overlay */
+
 .task-modal-overlay {
     position: fixed;
     top: 0;
@@ -1383,7 +1379,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     vertical-align: -0.12em;
 }
 
-/* Dynamic Chat & News TV Components */
+
 @keyframes tvFlickerAnimation {
     0% { opacity: 0.82; filter: brightness(1.2) contrast(110%); }
     50% { opacity: 0.95; filter: brightness(0.9) contrast(95%); }
@@ -1416,9 +1412,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-shadow: 0 0 8px var(--primary-color);
 }
 
-/* =========================================================================
-   3D Retro CRT Television (Market Newz Widget)
-   ========================================================================= */
+
 .retro-tv-bubble-container {
     width: 100%;
     display: flex;
@@ -1458,7 +1452,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     cursor: grabbing;
 }
 
-/* TV Cabinet Faces - dimensions: 100px W x 74px H x 56px D */
+
 .tv-face {
     position: absolute;
     box-sizing: border-box;
@@ -1471,7 +1465,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 .tv-front {
     width: 100px;
     height: 74px;
-    transform: translateZ(28px); /* depth / 2 = 56px/2 = 28px */
+    transform: translateZ(28px); 
     background: var(--tv-body-front);
     border-radius: 6px;
     padding: 6px;
@@ -1493,10 +1487,10 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 }
 
 .tv-left {
-    width: 56px; /* depth */
+    width: 56px; 
     height: 74px;
-    left: 22px; /* (width - depth) / 2 = (100 - 56) / 2 = 22px */
-    transform: rotateY(-90deg) translateZ(50px); /* width / 2 = 100px/2 = 50px */
+    left: 22px; 
+    transform: rotateY(-90deg) translateZ(50px); 
     background: var(--tv-body-side-left);
 }
 
@@ -1510,9 +1504,9 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 
 .tv-top {
     width: 100px;
-    height: 56px; /* depth */
-    top: 9px; /* (height - depth) / 2 = (74 - 56) / 2 = 9px */
-    transform: rotateX(90deg) translateZ(37px); /* height / 2 = 74px/2 = 37px */
+    height: 56px; 
+    top: 9px; 
+    transform: rotateX(90deg) translateZ(37px); 
     background: var(--tv-body-top);
 }
 
@@ -1524,7 +1518,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     background: var(--tv-body-bottom);
 }
 
-/* CRT Screen Face detail */
+
 .tv-crt-screen {
     width: 65px;
     height: 62px;
@@ -1548,7 +1542,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-shadow: inset 0 0 5px rgba(0,0,0,0.98) !important;
 }
 
-/* News ticker wrapper inside CRT screen */
+
 .tv-crt-ticker {
     width: 100%;
     height: 100%;
@@ -1557,7 +1551,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     line-height: 1.2;
 }
 
-/* Dial details on the TV front panel */
+
 .tv-controls-panel {
     flex: 1;
     display: flex;
@@ -1637,7 +1631,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-shadow: 0 0 2px #ff4b4b, 0 0 0.5px #ff4b4b;
 }
 
-/* Antennas on Top face */
+
 .tv-antenna-left {
     position: absolute;
     width: 2px;
@@ -1671,7 +1665,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-shadow: 0 1px 1px rgba(0,0,0,0.3);
 }
 
-/* TV legs */
+
 .tv-leg {
     position: absolute;
     width: 6px;
@@ -1686,7 +1680,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
 .tv-leg-bl { left: 14px; bottom: -4.5px; transform: rotateX(-20deg) rotateY(15deg) translateZ(-20px); }
 .tv-leg-br { right: 14px; bottom: -4.5px; transform: rotateX(-20deg) rotateY(-15deg) translateZ(-20px); }
 
-/* Static Noise Overlay */
+
 .crt-static-noise {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -1710,7 +1704,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     100% { transform: translate(0,0); }
 }
 
-/* Wobble / Shake Keyframes */
+
 @keyframes tvWobble {
     0% { transform: rotateX(-10deg) rotateY(-18deg) scale(1); }
     15% { transform: rotateX(-6deg) rotateY(-23deg) scale(1.1) rotateZ(-3deg); }
@@ -1725,7 +1719,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     animation: tvWobble 0.75s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
-/* Floating News Speech Bubble */
+
 .news-speech-bubble {
     position: relative;
     background: var(--card-bg-solid);
@@ -1764,30 +1758,28 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     100% { transform: translateY(-4px); }
 }
 
-/* =========================================================================
-   Floating Draggable News Widget (Boxless)
-   ========================================================================= */
+
 .floating-news-widget {
     background: none !important;
     border: none !important;
     border-radius: 0 !important;
-    padding-top: 25px !important; /* Spacing for 3D antennas */
+    padding-top: 25px !important; 
     width: 220px;
     box-shadow: none !important;
     transition: transform 0.2s ease;
     user-select: none;
     -webkit-user-select: none;
-    pointer-events: none; /* Let clicks pass through transparent wrapper */
+    pointer-events: none; 
 }
 
-/* Enable pointer events specifically on the TV container and speech bubble */
+
 .floating-news-widget #retro-tv-drag-area,
 .floating-news-widget .news-speech-bubble,
 .floating-news-widget .tv-drag-handle {
     pointer-events: auto;
 }
 
-/* TV drag handle layout */
+
 .tv-drag-handle {
     width: 28px;
     height: 28px;
@@ -1796,7 +1788,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--border-radius); /* Consistent rounded corners */
+    border-radius: var(--border-radius); 
     background: var(--card-bg-solid);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
@@ -1813,7 +1805,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     transform: translateY(0);
 }
 
-/* TV collapsible button */
+
 .tv-collapse-btn {
     width: 10px;
     height: 10px;
@@ -1833,7 +1825,7 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     box-shadow: inset 0.5px 0.5px 0.5px rgba(0,0,0,0.9);
 }
 
-/* Tab filtering style */
+
 .news-tabs {
     display: flex;
     width: 100%;
@@ -1867,10 +1859,10 @@ input:focus, select:focus { outline: none; border-color: var(--text-primary); }
     background: var(--nav-active-bg);
 }
 
-/* Premium Dynamic Controls Tooltip */
+
 .tv-tooltip {
     position: absolute;
-    top: 0px; /* sit just above antennas */
+    top: 0px; 
     left: 50%;
     transform: translateX(-50%) translateY(4px);
     background: var(--card-bg-solid);

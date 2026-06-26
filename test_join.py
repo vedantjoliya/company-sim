@@ -3,7 +3,7 @@ import urllib.parse
 import json
 import sqlite3
 
-# Create a session
+
 req = urllib.request.Request('http://localhost:5000/create_session', data=json.dumps({'goal_revenue': 1000}).encode('utf-8'), headers={'Content-Type': 'application/json'})
 with urllib.request.urlopen(req) as response:
     print("Create response:", response.status, response.read().decode('utf-8'))

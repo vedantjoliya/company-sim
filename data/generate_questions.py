@@ -2,10 +2,10 @@ import json
 import random
 import os
 
-# Core role domains in the system
+
 domains = ["Engineering", "Infrastructure", "Data", "Product", "Design", "Leadership"]
 
-# Define datasets for each domain to allow generating highly diverse questions
+
 data_pool = {
     "Engineering": {
         "acronyms": [
@@ -208,11 +208,11 @@ data_pool = {
 questions = []
 q_id = 1
 
-# ----------------- ORIGINAL TASKS: 1020 QUESTIONS -----------------
+
 for domain in domains:
     pool = data_pool[domain]
     
-    # 1. Acronym MCQs (Target: 40 questions per domain)
+    
     for i in range(40):
         acr, correct, wrong, hint = random.choice(pool["acronyms"])
         templates = [
@@ -241,7 +241,7 @@ for domain in domains:
         })
         q_id += 1
 
-    # 2. Tool MCQs (Target: 40 questions per domain)
+    
     for i in range(40):
         tool, task, details, concept = random.choice(pool["tools"])
         templates = [
@@ -266,7 +266,7 @@ for domain in domains:
         })
         q_id += 1
 
-    # 3. True / False statements (Target: 40 questions per domain)
+    
     for i in range(40):
         stmt, is_true, hint = pool["statements"][i % len(pool["statements"])]
         
@@ -282,7 +282,7 @@ for domain in domains:
         })
         q_id += 1
 
-    # 4. Fill in the Blank concept bugs (Target: 25 questions per domain)
+    
     for i in range(25):
         q_item = pool["bugs"][i % len(pool["bugs"])]
         q_text, ans, hint = q_item
@@ -298,7 +298,7 @@ for domain in domains:
         })
         q_id += 1
 
-    # 5. Exact command queries (Target: 25 questions per domain)
+    
     for i in range(25):
         q_item = pool["commands"][i % len(pool["commands"])]
         q_text, ans, hint = q_item
@@ -314,10 +314,10 @@ for domain in domains:
         })
         q_id += 1
 
-# ----------------- NEW TASKS: 5000 QUESTIONS (1250 per task type) -----------------
 
-# Task 1: Refactor Codebase (refactor) -> 1250 Questions
-# (Type A: calculation (625), Type B: prompt_engineering (625))
+
+
+
 func_names = ["bubble_sort", "binary_search", "process_matrix", "traverse_tree", "lookup_node", "hash_index", "validate_inputs", "aggregate_records", "sort_stack", "merge_branches"]
 variables = ["N", "M", "K", "X", "Y", "A", "B"]
 prompt_targets = [
@@ -330,7 +330,7 @@ prompt_targets = [
     ("refactor a global mutable state script causing racing deadlocks", "Encapsulate states in safe transaction locks or threads queues")
 ]
 
-# Refactor: 625 Calculation questions
+
 for idx in range(625):
     f_name = func_names[idx % len(func_names)]
     v1 = variables[idx % len(variables)]
@@ -352,7 +352,7 @@ for idx in range(625):
         
     random.shuffle(options)
     
-    # Proportional domains: Eng (40%), Infra (30%), Data (30%)
+    
     r = random.random()
     if r < 0.40: dom = "Engineering"
     elif r < 0.70: dom = "Infrastructure"
@@ -370,7 +370,7 @@ for idx in range(625):
     })
     q_id += 1
 
-# Refactor: 625 Prompt engineering questions
+
 for idx in range(625):
     target, correct_prompt = prompt_targets[idx % len(prompt_targets)]
     q_text = f"PROMPT DESIGN: You need to prompt an AI assistant to {target}_{idx}.\nWhich system instruction ensures the safest, most performant refactoring?"
@@ -384,7 +384,7 @@ for idx in range(625):
     ]
     random.shuffle(options)
     
-    # Proportional domains: Eng (40%), Infra (30%), Data (30%)
+    
     r = random.random()
     if r < 0.40: dom = "Engineering"
     elif r < 0.70: dom = "Infrastructure"
@@ -403,8 +403,8 @@ for idx in range(625):
     q_id += 1
 
 
-# Task 2: Deploy Hotfix (hotfix) -> 1250 Questions
-# (Type A: scenario_based (625), Type B: calculation (625))
+
+
 services = ["auth-api", "payment-gateway", "billing-node", "user-profile-db", "search-engine", "notification-queue", "cdn-delivery", "logging-aggregator"]
 incidents = [
     ("502 Bad Gateway", "high memory consumption deadlocks", "Roll back connection pool sizes and revert recent Docker commits"),
@@ -414,7 +414,7 @@ incidents = [
     ("408 Request Timeout", "packet losses on virtual private cloud channels", "Trigger network path check and route through backup availability zones")
 ]
 
-# Hotfix: 625 Scenario based questions
+
 for idx in range(625):
     srv = services[idx % len(services)]
     err, trigger, resolution = incidents[idx % len(incidents)]
@@ -431,7 +431,7 @@ for idx in range(625):
     ]
     random.shuffle(options)
     
-    # Proportional domains: Eng (30%), Infra (50%), Data (20%)
+    
     r = random.random()
     if r < 0.30: dom = "Engineering"
     elif r < 0.80: dom = "Infrastructure"
@@ -449,7 +449,7 @@ for idx in range(625):
     })
     q_id += 1
 
-# Hotfix: 625 Calculation questions
+
 for idx in range(625):
     srv = services[idx % len(services)]
     total_reqs = 1000 * ((idx % 10) + 1)
@@ -460,14 +460,14 @@ for idx in range(625):
     
     correct = f"{error_rate:.2f}%"
     options = [correct, f"{(error_rate * 1.5):.2f}%", f"{(error_rate * 0.5):.2f}%", f"{(error_rate + 2.5):.2f}%"]
-    # Ensure options are unique
+    
     options = list(dict.fromkeys(options))
     while len(options) < 4:
         options.append(f"{(error_rate + len(options)):.2f}%")
         
     random.shuffle(options)
     
-    # Proportional domains: Eng (30%), Infra (50%), Data (20%)
+    
     r = random.random()
     if r < 0.30: dom = "Engineering"
     elif r < 0.80: dom = "Infrastructure"
@@ -486,8 +486,8 @@ for idx in range(625):
     q_id += 1
 
 
-# Task 3: Team Bonding (bonding) -> 1250 Questions
-# (Type A: match_following (625), Type B: scenario_based (625))
+
+
 roles_list = [
     ("DevOps Engineer", "provision pipelines, deploy clusters, manage Cloud infrastructure scaling"),
     ("Data Specialist", "design schemas, maintain ETL streaming topics, analyze DB queries"),
@@ -505,7 +505,7 @@ bond_reasons = [
 names = ["Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Grace", "Jack", "Ivy"]
 teams = ["Apollo", "Enterprise", "Zenith", "Orion", "Titan", "Aurora", "Phoenix"]
 
-# Bonding: 625 Match Following
+
 for idx in range(625):
     role, resp = roles_list[idx % len(roles_list)]
     name = names[idx % len(names)]
@@ -521,7 +521,7 @@ for idx in range(625):
     ]
     random.shuffle(options)
     
-    # Equally distributed among all 6 domains
+    
     dom = domains[idx % len(domains)]
     
     questions.append({
@@ -536,7 +536,7 @@ for idx in range(625):
     })
     q_id += 1
 
-# Bonding: 625 Scenario based (HR)
+
 for idx in range(625):
     name = names[idx % len(names)]
     t = teams[idx % len(teams)]
@@ -553,7 +553,7 @@ for idx in range(625):
     ]
     random.shuffle(options)
     
-    # Equally distributed
+    
     dom = domains[idx % len(domains)]
     
     questions.append({
@@ -569,8 +569,8 @@ for idx in range(625):
     q_id += 1
 
 
-# Task 4: Marketing Campaign (marketing) -> 1250 Questions
-# (Type A: calculation (625), Type B: news_quiz (625))
+
+
 ad_channels = ["Google Ads", "Twitter Ads", "Facebook Ads", "LinkedIn Ads", "Reddit Campaign", "TikTok Campaign"]
 rivals = ["MegaCorp", "InnovateTech", "ApexSystems", "FutureSaaS", "ByteCore", "NexusSolutions"]
 sectors = ["Enterprise B2B", "Mid-Market SME", "Consumer Apps", "Developer Tools", "AI Startups"]
@@ -581,11 +581,11 @@ rival_features = [
     ("a simplified dashboard UI layout", "Design visual campaign ads showcasing Figma UI flow reviews, and highlights user experience metrics")
 ]
 
-# Marketing: 625 Calculations (CAC / ROI)
+
 for idx in range(625):
     chan = ad_channels[idx % len(ad_channels)]
-    total_spend = 100 * ((idx % 30) + 10) # $1000 to $3900
-    new_users = 10 * ((idx % 20) + 5) # 50 to 240
+    total_spend = 100 * ((idx % 30) + 10) 
+    new_users = 10 * ((idx % 20) + 5) 
     cac = total_spend / new_users
     
     q_text = f"MARKETING METRICS: Your campaign on '{chan}' spent ${total_spend} and successfully acquired {new_users} new active subscribers. Calculate the Customer Acquisition Cost (CAC) for this campaign run."
@@ -598,7 +598,7 @@ for idx in range(625):
         
     random.shuffle(options)
     
-    # Proportional domains: Product (40%), Design (30%), Leadership (30%)
+    
     r = random.random()
     if r < 0.40: dom = "Product"
     elif r < 0.70: dom = "Design"
@@ -616,7 +616,7 @@ for idx in range(625):
     })
     q_id += 1
 
-# Marketing: 625 News Quizzes
+
 for idx in range(625):
     riv = rivals[idx % len(rivals)]
     feat, strategy = rival_features[idx % len(rival_features)]
@@ -633,7 +633,7 @@ for idx in range(625):
     ]
     random.shuffle(options)
     
-    # Proportional domains: Product (40%), Design (30%), Leadership (30%)
+    
     r = random.random()
     if r < 0.40: dom = "Product"
     elif r < 0.70: dom = "Design"
@@ -651,14 +651,14 @@ for idx in range(625):
     })
     q_id += 1
 
-# Shuffle all generated questions
+
 random.shuffle(questions)
 
-# Rewrite IDs sequentially to match database keys
+
 for idx, q in enumerate(questions):
     q["id"] = idx + 1
 
-# Output file path
+
 output_path = os.path.join(os.path.dirname(__file__), 'questions.json')
 with open(output_path, 'w') as f:
     json.dump(questions, f, indent=4)

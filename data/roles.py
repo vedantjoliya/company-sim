@@ -39,5 +39,5 @@ def get_all_roles():
     return list(ROLES.values())
 
 def get_starting_roles():
-    # Only Juniors are available to start
+    
     return [r for r in ROLES.values() if "Junior" in r['title']]
