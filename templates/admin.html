@@ -658,6 +658,44 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
+        function performAdminAction(action, payload = {}, successCallback = null) {
+            if (socket && socket.connected) {
+                let eventName = 'admin_' + action;
+                if (action === 'start_all') eventName = 'admin_start_all';
+                else if (action === 'pause_all') eventName = 'admin_pause_all';
+                else if (action === 'resume_all') eventName = 'admin_resume_all';
+                else if (action === 'kill_all') eventName = 'admin_kill_all';
+                else if (action === 'start_company') eventName = 'admin_start_company';
+                else if (action === 'pause_company') eventName = 'admin_pause_company';
+                else if (action === 'resume_company') eventName = 'admin_resume_company';
+                else if (action === 'kill_company') eventName = 'admin_kill';
+                else if (action === 'delete_company') eventName = 'admin_delete_company';
+                else if (action === 'kick_player') eventName = 'admin_kick_player';
+
+                socket.emit(eventName, payload);
+                if (successCallback) successCallback();
+            } else {
+                fetch('/api/admin/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.assign({ action: action }, payload))
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (successCallback) successCallback();
+                        loadAdminState();
+                    } else {
+                        showToast(data.error || "Action failed.", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error("Action error:", err);
+                    showToast("Network error performing action.", "error");
+                });
+            }
+        }
+
         function createCompany() {
             showToast("Creating company node...", "info");
             fetch('/create_session', {
@@ -669,6 +707,7 @@
             .then(data => {
                 if (data.success) {
                     showToast("Company node created successfully!");
+                    loadAdminState();
                 } else {
                     showToast("Failed to create company node.", "error");
                 }
@@ -680,65 +719,75 @@
 
         function startCompetition() {
             if(confirm("Start ALL waiting companies simultaneously?")) {
-                socket.emit('admin_start_all');
-                showToast("Simulation starting for all companies...", "info");
+                performAdminAction('start_all', {}, () => {
+                    showToast("Simulation starting for all companies...", "info");
+                });
             }
         }
 
         function startCompany(id) {
-            socket.emit('admin_start_company', { session_id: id });
-            showToast("Starting simulation...", "info");
+            performAdminAction('start_company', { session_id: id }, () => {
+                showToast("Starting simulation...", "info");
+            });
         }
 
         function pauseCompany(id) {
-            socket.emit('admin_pause_company', { session_id: id });
-            showToast("Simulation paused.", "info");
+            performAdminAction('pause_company', { session_id: id }, () => {
+                showToast("Simulation paused.", "info");
+            });
         }
 
         function resumeCompany(id) {
-            socket.emit('admin_resume_company', { session_id: id });
-            showToast("Simulation resumed.", "info");
+            performAdminAction('resume_company', { session_id: id }, () => {
+                showToast("Simulation resumed.", "info");
+            });
         }
 
         function killCompany(id) {
             if(confirm("Terminate this company session? Players will be booted to game over screen.")) {
-                socket.emit('admin_kill', { session_id: id });
-                showToast("Simulation terminated.", "error");
+                performAdminAction('kill_company', { session_id: id }, () => {
+                    showToast("Simulation terminated.", "error");
+                });
             }
         }
 
         function pauseAll() {
             if(confirm("Pause ALL active simulations?")) {
-                socket.emit('admin_pause_all');
-                showToast("Pausing all active simulations...", "info");
+                performAdminAction('pause_all', {}, () => {
+                    showToast("Pausing all active simulations...", "info");
+                });
             }
         }
 
         function resumeAll() {
             if(confirm("Resume ALL paused simulations?")) {
-                socket.emit('admin_resume_all');
-                showToast("Resuming all paused simulations...", "info");
+                performAdminAction('resume_all', {}, () => {
+                    showToast("Resuming all paused simulations...", "info");
+                });
             }
         }
 
         function killAll() {
             if(confirm("Terminate ALL active simulations?")) {
-                socket.emit('admin_kill_all');
-                showToast("Terminating all simulations...", "error");
+                performAdminAction('kill_all', {}, () => {
+                    showToast("Terminating all simulations...", "error");
+                });
             }
         }
 
         function deleteCompany(id) {
             if(confirm("Delete this company and boot all its players?")) {
-                socket.emit('admin_delete_company', { session_id: id });
-                showToast("Company deleted.", "error");
+                performAdminAction('delete_company', { session_id: id }, () => {
+                    showToast("Company deleted.", "error");
+                });
             }
         }
 
         function kickPlayer(id) {
             if(confirm("Kick this player?")) {
-                socket.emit('admin_kick_player', { player_id: id });
-                showToast("Player kicked.", "error");
+                performAdminAction('kick_player', { player_id: id }, () => {
+                    showToast("Player kicked.", "error");
+                });
             }
         }
 
@@ -1275,6 +1324,22 @@
         });
 
         
+        function loadAdminState() {
+            fetch('/api/admin/state')
+            .then(res => res.json())
+            .then(data => {
+                if (data.companies) {
+                    updateAdminStateUI(data.companies);
+                }
+                if (data.system_status) {
+                    updateSystemStatusUI(data.system_status);
+                }
+            })
+            .catch(err => {
+                console.error("Error loading admin state:", err);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('company_sim_lang') || 'en';
             const savedTheme = localStorage.getItem('company_sim_theme') || 'default';
@@ -1282,6 +1347,16 @@
             changeTheme(savedTheme);
             lucide.createIcons();
             loadAdminState();
+
+            // Polling interval running every 3 seconds for serverless environments
+            setInterval(() => {
+                if (!socket || !socket.connected) {
+                    loadAdminState();
+                    if (document.getElementById('view-support') && document.getElementById('view-support').classList.contains('active')) {
+                        loadSupportPlayers();
+                    }
+                }
+            }, 3000);
         });
     </script>
 </body>

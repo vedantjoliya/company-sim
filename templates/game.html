@@ -1228,16 +1228,37 @@
             const content = input.value.trim();
             if (!content) return;
             
-            socket.emit('send_chat_msg', {
-                player_id: playerId,
-                content: content,
-                channel: currentChatChannel
-            });
+            if (socket && socket.connected) {
+                socket.emit('send_chat_msg', {
+                    player_id: playerId,
+                    content: content,
+                    channel: currentChatChannel
+                });
+            } else {
+                fetch('/api/game/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'send_chat',
+                        player_id: playerId,
+                        content: content,
+                        channel: currentChatChannel
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        pollChatMessages();
+                    }
+                })
+                .catch(err => console.error('REST Chat failed:', err));
+            }
             
             input.value = '';
         }
 
         function appendChatHubMessageUI(msg) {
+            lastChatMessageId = Math.max(lastChatMessageId, msg.id || 0);
             const feed = document.getElementById('chat-hub-feed');
             const placeholder = feed.querySelector('div[style*="italic"]');
             if (placeholder) placeholder.remove();
@@ -1560,6 +1581,7 @@
         }
 
         function appendSupportMessageUI(msg) {
+            lastSupportMessageId = Math.max(lastSupportMessageId, msg.id || 0);
             const container = document.getElementById('support-chat-history');
             const placeholder = container.querySelector('div[style*="italic"]');
             if (placeholder) placeholder.remove();
@@ -1609,11 +1631,30 @@
             const content = input.value.trim();
             if (!content) return;
             
-            socket.emit('send_support_msg', {
-                player_id: playerId,
-                content: content,
-                is_admin: false
-            });
+            if (socket && socket.connected) {
+                socket.emit('send_support_msg', {
+                    player_id: playerId,
+                    content: content,
+                    is_admin: false
+                });
+            } else {
+                fetch('/api/game/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'send_support',
+                        player_id: playerId,
+                        content: content
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        pollSupportMessages();
+                    }
+                })
+                .catch(err => console.error('REST Support failed:', err));
+            }
             input.value = '';
         }
 
@@ -1814,7 +1855,7 @@
             });
         }
 
-        socket.on('update_kpis', (data) => {
+        function updateKPIsUI(data) {
             const kpis = data.current;
             const history = data.history;
 
@@ -1907,6 +1948,10 @@
                 document.getElementById('crt-val-uptime').textContent = Number(kpis.server_uptime).toFixed(1) + '%';
                 document.getElementById('crt-val-morale').textContent = kpis.employee_morale + '%';
             }
+        }
+
+        socket.on('update_kpis', (data) => {
+            updateKPIsUI(data);
         });
 
         function updateGadgetButtons(ownedGadgets) {
@@ -1926,7 +1971,7 @@
             });
         }
 
-        socket.on('personal_update', (data) => {
+        function updatePersonalUI(data) {
             const formattedSavings = '$' + data.savings.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('personal-savings').textContent = formattedSavings;
             
@@ -2030,13 +2075,42 @@
 
             updateGadgetButtons(data.gadgets);
             lucide.createIcons();
+        }
+
+        socket.on('personal_update', (data) => {
+            updatePersonalUI(data);
         });
 
         function buyGadget(gadgetName, cost) {
-            socket.emit('buy_gadget', { player_id: playerId, gadget: gadgetName, cost: cost });
+            if (confirm(`Purchase ${gadgetName} for $${cost.toLocaleString()}?`)) {
+                if (socket && socket.connected) {
+                    socket.emit('buy_gadget', { player_id: playerId, gadget: gadgetName, cost: cost });
+                } else {
+                    fetch('/api/game/action', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'buy_gadget',
+                            player_id: playerId,
+                            gadget: gadgetName,
+                            cost: cost
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            gadgetBoughtUI(data.result);
+                            loadGameState();
+                        } else {
+                            alert(data.error || 'Failed to buy gadget.');
+                        }
+                    })
+                    .catch(err => console.error('REST buy_gadget failed:', err));
+                }
+            }
         }
 
-        socket.on('gadget_bought', (res) => {
+        function gadgetBoughtUI(res) {
             if (res.success) {
                 const formattedSavings = '$' + res.savings.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 document.getElementById('personal-savings').textContent = formattedSavings;
@@ -2051,15 +2125,23 @@
             } else {
                 alert(res.error);
             }
+        }
+
+        socket.on('gadget_bought', (res) => {
+            gadgetBoughtUI(res);
         });
 
-        socket.on('new_chat_msg', (msg) => {
+        function handleNewChatMsg(msg) {
             if (msg.channel === currentChatChannel) {
                 appendChatHubMessageUI(msg);
             }
+        }
+
+        socket.on('new_chat_msg', (msg) => {
+            handleNewChatMsg(msg);
         });
 
-        socket.on('global_leaderboard', (leaderboard) => {
+        function updateLeaderboardUI(leaderboard) {
             const list = document.getElementById('rivals-list');
             if (!list) return;
             list.innerHTML = '';
@@ -2117,14 +2199,22 @@
                 rivalsChart.update();
             }
             lucide.createIcons();
+        }
+
+        socket.on('global_leaderboard', (leaderboard) => {
+            updateLeaderboardUI(leaderboard);
         });
 
         
-        socket.on('market_news_update', (news) => {
+        function updateMarketNewsUI(news) {
             activeNewsItems = news;
             renderNewsList();
             flickerTVscreen();
             lucide.createIcons();
+        }
+
+        socket.on('market_news_update', (news) => {
+            updateMarketNewsUI(news);
         });
 
         function switchView(viewId) {
@@ -2267,10 +2357,33 @@
             document.getElementById('q-input-container').style.display = 'none';
             document.getElementById('btn-show-hint').style.display = 'none';
             
-            socket.emit('get_question', { player_id: playerId, difficulty: diff });
+            if (socket && socket.connected) {
+                socket.emit('get_question', { player_id: playerId, difficulty: diff });
+            } else {
+                fetch('/api/game/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_question',
+                        player_id: playerId,
+                        difficulty: diff
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.question) {
+                        receiveQuestionUI(data.question);
+                    } else {
+                        document.getElementById('q-text-container').innerHTML = `<h3 id="q-text" style="color: var(--negative);">${data.error || 'Failed to load task.'}</h3>`;
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('q-text-container').innerHTML = `<h3 id="q-text" style="color: var(--negative);">Network error loading task.</h3>`;
+                });
+            }
         }
 
-        socket.on('receive_question', (q) => {
+        function receiveQuestionUI(q) {
             currentQuestionId = q.id;
             currentQuestionType = q.type;
             currentQuestionDifficulty = q.difficulty;
@@ -2315,6 +2428,10 @@
                 setTimeout(() => qInput.focus(), 50);
             }
             lucide.createIcons();
+        }
+
+        socket.on('receive_question', (q) => {
+            receiveQuestionUI(q);
         });
 
         function submitInputAnswer() {
@@ -2358,15 +2475,49 @@
             if (qInput) qInput.disabled = true;
             if (btnSubmit) btnSubmit.disabled = true;
             
-            socket.emit('answer_question', { 
-                player_id: playerId, 
-                question_id: currentQuestionId, 
-                answer_input: answer,
-                task_difficulty: currentQuestionDifficulty
-            });
+            if (socket && socket.connected) {
+                socket.emit('answer_question', { 
+                    player_id: playerId, 
+                    question_id: currentQuestionId, 
+                    answer_input: answer,
+                    task_difficulty: currentQuestionDifficulty
+                });
+            } else {
+                fetch('/api/game/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'answer_question',
+                        player_id: playerId,
+                        question_id: currentQuestionId,
+                        answer_input: answer,
+                        task_difficulty: currentQuestionDifficulty
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        answerResultUI(data.result);
+                        loadGameState();
+                    } else {
+                        alert(data.error || 'Failed to submit answer.');
+                        const qInput = document.getElementById('q-input');
+                        const btnSubmit = document.getElementById('btn-submit-input');
+                        if (qInput) qInput.disabled = false;
+                        if (btnSubmit) btnSubmit.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    alert('Network error.');
+                    const qInput = document.getElementById('q-input');
+                    const btnSubmit = document.getElementById('btn-submit-input');
+                    if (qInput) qInput.disabled = false;
+                    if (btnSubmit) btnSubmit.disabled = false;
+                });
+            }
         }
 
-        socket.on('answer_result', (res) => {
+        function answerResultUI(res) {
             const qInput = document.getElementById('q-input');
             const btnSubmit = document.getElementById('btn-submit-input');
             if (qInput) qInput.disabled = false;
@@ -2405,6 +2556,10 @@
             
             currentQuestionId = null;
             currentQuestionDifficulty = null;
+        }
+
+        socket.on('answer_result', (res) => {
+            answerResultUI(res);
         });
 
         socket.on('you_are_fired', () => {
@@ -2468,6 +2623,17 @@
             changeTheme(savedTheme);
             loadSupportHistory();
             
+            // Initial load of game state
+            loadGameState();
+            
+            // Polling interval running every 3 seconds for serverless environments
+            setInterval(() => {
+                if (!socket || !socket.connected) {
+                    loadGameState();
+                    pollChatMessages();
+                    pollSupportMessages();
+                }
+            }, 3000);
             
             const tvWidget = document.getElementById('floating-news-widget');
             if (tvWidget) {
@@ -2768,6 +2934,67 @@
                 }
             });
         })();
+
+        let lastChatMessageId = 0;
+        let lastSupportMessageId = 0;
+
+        function loadGameState() {
+            fetch('/api/game/state?player_id=' + playerId)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.session_status === 'active') {
+                        document.getElementById('loading-overlay').classList.remove('active');
+                    } else if (data.session_status === 'paused') {
+                        document.getElementById('loading-overlay').classList.add('active');
+                        const h2 = document.querySelector('#loading-overlay h2');
+                        const p = document.querySelector('#loading-overlay p');
+                        if (h2) h2.textContent = "Session Paused";
+                        if (p) p.textContent = "The administrator has paused the simulation.";
+                    } else if (data.session_status === 'ended') {
+                        window.location.href = '/';
+                    }
+
+                    if (data.player_status === 'fired') {
+                        window.location.href = '/fired';
+                    }
+
+                    updateKPIsUI({ current: data.kpis, history: data.kpi_history });
+                    updatePersonalUI(data.personal);
+                    updateLeaderboardUI(data.global_leaderboard);
+                    updateMarketNewsUI(data.market_news);
+                }
+            })
+            .catch(err => console.error('Error fetching game state:', err));
+        }
+
+        function pollChatMessages() {
+            fetch(`/api/chat_history?player_id=${playerId}&channel=${currentChatChannel}`)
+            .then(res => res.json())
+            .then(messages => {
+                messages.forEach(msg => {
+                    if (msg.id > lastChatMessageId) {
+                        appendChatHubMessageUI(msg);
+                        lastChatMessageId = Math.max(lastChatMessageId, msg.id || 0);
+                    }
+                });
+            })
+            .catch(err => console.error('Error polling chat messages:', err));
+        }
+
+        function pollSupportMessages() {
+            fetch(`/api/support_history?player_id=${playerId}`)
+            .then(res => res.json())
+            .then(messages => {
+                messages.forEach(msg => {
+                    if (msg.id > lastSupportMessageId) {
+                        appendSupportMessageUI(msg);
+                        lastSupportMessageId = Math.max(lastSupportMessageId, msg.id || 0);
+                    }
+                });
+            })
+            .catch(err => console.error('Error polling support messages:', err));
+        }
     </script>
 </body>
 </html>
