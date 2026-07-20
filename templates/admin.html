@@ -382,8 +382,24 @@
     <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
 
     <script>
-        const socket = io();
-        socket.emit('join', { is_admin: true });
+        const isLocal = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' || 
+                        window.location.hostname === '[::1]' || 
+                        window.location.hostname.startsWith('192.168.') || 
+                        window.location.hostname.startsWith('10.') || 
+                        window.location.hostname.startsWith('172.') || 
+                        window.location.port !== '';
+        const socket = io({
+            transports: isLocal ? ['polling'] : ['polling', 'websocket']
+        });
+        
+        function joinAdminRoom() {
+            socket.emit('join', { is_admin: true });
+        }
+        socket.on('connect', joinAdminRoom);
+        if (socket.connected) {
+            joinAdminRoom();
+        }
 
         const updateKPI = (id, newValue, formatFunc) => {
             const el = document.getElementById(id);
@@ -658,44 +674,6 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
-        function performAdminAction(action, payload = {}, successCallback = null) {
-            if (socket && socket.connected) {
-                let eventName = 'admin_' + action;
-                if (action === 'start_all') eventName = 'admin_start_all';
-                else if (action === 'pause_all') eventName = 'admin_pause_all';
-                else if (action === 'resume_all') eventName = 'admin_resume_all';
-                else if (action === 'kill_all') eventName = 'admin_kill_all';
-                else if (action === 'start_company') eventName = 'admin_start_company';
-                else if (action === 'pause_company') eventName = 'admin_pause_company';
-                else if (action === 'resume_company') eventName = 'admin_resume_company';
-                else if (action === 'kill_company') eventName = 'admin_kill';
-                else if (action === 'delete_company') eventName = 'admin_delete_company';
-                else if (action === 'kick_player') eventName = 'admin_kick_player';
-
-                socket.emit(eventName, payload);
-                if (successCallback) successCallback();
-            } else {
-                fetch('/api/admin/action', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(Object.assign({ action: action }, payload))
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        if (successCallback) successCallback();
-                        loadAdminState();
-                    } else {
-                        showToast(data.error || "Action failed.", "error");
-                    }
-                })
-                .catch(err => {
-                    console.error("Action error:", err);
-                    showToast("Network error performing action.", "error");
-                });
-            }
-        }
-
         function createCompany() {
             showToast("Creating company node...", "info");
             fetch('/create_session', {
@@ -707,7 +685,6 @@
             .then(data => {
                 if (data.success) {
                     showToast("Company node created successfully!");
-                    loadAdminState();
                 } else {
                     showToast("Failed to create company node.", "error");
                 }
@@ -719,75 +696,65 @@
 
         function startCompetition() {
             if(confirm("Start ALL waiting companies simultaneously?")) {
-                performAdminAction('start_all', {}, () => {
-                    showToast("Simulation starting for all companies...", "info");
-                });
+                socket.emit('admin_start_all');
+                showToast("Simulation starting for all companies...", "info");
             }
         }
 
         function startCompany(id) {
-            performAdminAction('start_company', { session_id: id }, () => {
-                showToast("Starting simulation...", "info");
-            });
+            socket.emit('admin_start_company', { session_id: id });
+            showToast("Starting simulation...", "info");
         }
 
         function pauseCompany(id) {
-            performAdminAction('pause_company', { session_id: id }, () => {
-                showToast("Simulation paused.", "info");
-            });
+            socket.emit('admin_pause_company', { session_id: id });
+            showToast("Simulation paused.", "info");
         }
 
         function resumeCompany(id) {
-            performAdminAction('resume_company', { session_id: id }, () => {
-                showToast("Simulation resumed.", "info");
-            });
+            socket.emit('admin_resume_company', { session_id: id });
+            showToast("Simulation resumed.", "info");
         }
 
         function killCompany(id) {
             if(confirm("Terminate this company session? Players will be booted to game over screen.")) {
-                performAdminAction('kill_company', { session_id: id }, () => {
-                    showToast("Simulation terminated.", "error");
-                });
+                socket.emit('admin_kill', { session_id: id });
+                showToast("Simulation terminated.", "error");
             }
         }
 
         function pauseAll() {
             if(confirm("Pause ALL active simulations?")) {
-                performAdminAction('pause_all', {}, () => {
-                    showToast("Pausing all active simulations...", "info");
-                });
+                socket.emit('admin_pause_all');
+                showToast("Pausing all active simulations...", "info");
             }
         }
 
         function resumeAll() {
             if(confirm("Resume ALL paused simulations?")) {
-                performAdminAction('resume_all', {}, () => {
-                    showToast("Resuming all paused simulations...", "info");
-                });
+                socket.emit('admin_resume_all');
+                showToast("Resuming all paused simulations...", "info");
             }
         }
 
         function killAll() {
             if(confirm("Terminate ALL active simulations?")) {
-                performAdminAction('kill_all', {}, () => {
-                    showToast("Terminating all simulations...", "error");
-                });
+                socket.emit('admin_kill_all');
+                showToast("Terminating all simulations...", "error");
             }
         }
 
         function deleteCompany(id) {
             if(confirm("Delete this company and boot all its players?")) {
-                performAdminAction('delete_company', { session_id: id }, () => {
-                    showToast("Company deleted.", "error");
-                });
+                socket.emit('admin_delete_company', { session_id: id });
+                showToast("Company deleted.", "error");
             }
         }
 
         function kickPlayer(id) {
             if(confirm("Kick this player?")) {
-                performAdminAction('kick_player', { player_id: id }, () => {
-                    showToast("Player kicked.", "error");
-                });
+                socket.emit('admin_kick_player', { player_id: id });
+                showToast("Player kicked.", "error");
             }
         }
 
@@ -943,25 +910,7 @@
         });
 
         
-        function updateSystemStatusUI(status) {
-            document.getElementById('status-db-type').textContent = status.database_type;
-            
-            const isVercel = status.is_vercel === "true";
-            document.getElementById('status-env').textContent = isVercel ? "Vercel Serverless" : "Local / Standard";
-            
-            document.getElementById('status-tick-mode').textContent = isVercel ? "Retroactive / Lazy" : "Threaded + Lazy";
-            
-            const warningEl = document.getElementById('sqlite-warning');
-            if (warningEl) {
-                if (isVercel && status.database_type === "SQLite") {
-                    warningEl.style.display = 'block';
-                } else {
-                    warningEl.style.display = 'none';
-                }
-            }
-        }
-
-        function updateAdminStateUI(companies) {
+        socket.on('admin_state_update', (companies) => {
             
             let totalPlayers = 0;
             let globalRevenue = 0.0;
@@ -1135,10 +1084,6 @@
             updateComparisonChart(companies);
             renderLeaderboards(companies);
             lucide.createIcons();
-        }
-
-        socket.on('admin_state_update', (companies) => {
-            updateAdminStateUI(companies);
         });
 
         
@@ -1324,39 +1269,12 @@
         });
 
         
-        function loadAdminState() {
-            fetch('/api/admin/state')
-            .then(res => res.json())
-            .then(data => {
-                if (data.companies) {
-                    updateAdminStateUI(data.companies);
-                }
-                if (data.system_status) {
-                    updateSystemStatusUI(data.system_status);
-                }
-            })
-            .catch(err => {
-                console.error("Error loading admin state:", err);
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('company_sim_lang') || 'en';
             const savedTheme = localStorage.getItem('company_sim_theme') || 'default';
             translatePage(savedLang);
             changeTheme(savedTheme);
             lucide.createIcons();
-            loadAdminState();
-
-            // Polling interval running every 3 seconds for serverless environments
-            setInterval(() => {
-                if (!socket || !socket.connected) {
-                    loadAdminState();
-                    if (document.getElementById('view-support') && document.getElementById('view-support').classList.contains('active')) {
-                        loadSupportPlayers();
-                    }
-                }
-            }, 3000);
         });
     </script>
 </body>

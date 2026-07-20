@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ player.name }} | Lobby</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20width='32'%20height='32'%3E%3Crect%20width='24'%20height='24'%20rx='6'%20fill='%23111111'/%3E%3Crect%20width='12'%20height='12'%20x='6'%20y='6'%20rx='1.5'%20fill='none'%20stroke='%2339e622'%20stroke-width='1.5'/%3E%3Crect%20width='4'%20height='4'%20x='10'%20y='10'%20rx='0.5'%20fill='none'%20stroke='%2339e622'%20stroke-width='1.5'/%3E%3Cpath%20d='M10%202v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M14%202v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M10%2018v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M14%2018v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M18%2010h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M18%2014h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M2%2010h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M2%2014h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/static/css/style.css?v=1.3">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: var(--bg-color);
+            margin: 0;
+            font-family: var(--font-body);
+        }
+        .lobby-container {
+            background: var(--card-bg-solid);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-soft);
+        }
+        .lobby-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(106, 76, 147, 0.2);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .lobby-title {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        .lobby-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        .players-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .player-item {
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="lobby-container">
+        <div class="lobby-spinner"></div>
+        <h1 class="lobby-title">Waiting for Admin</h1>
+        <p class="lobby-subtitle">The simulation for <strong>{{ session.name }}</strong> will begin shortly. Please stand by.</p>
+        
+        <div style="border-top: 1px solid var(--border-color); padding-top: 20px; text-align: left;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="users" style="color: var(--primary-color);"></i> Company Roster
+            </h3>
+            <div id="players-list" class="players-list">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const playerId = "{{ player.id }}";
+        const sessionId = "{{ session.id }}";
+        
+        const socket = io({
+            transports: ['polling'],
+            reconnection: true
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to lobby socket');
+            socket.emit('join', { session_id: sessionId, player_id: playerId });
+        });
+
+        socket.on('game_started', () => {
+            console.log('Game started, reloading...');
+            window.location.reload();
+        });
+
+        socket.on('session_status_update', (data) => {
+            if (data && data.status === 'active') {
+                console.log('Status active, reloading...');
+                window.location.reload();
+            }
+        });
+
+        function fetchPlayers() {
+            fetch('/api/game/state?player_id=' + playerId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.session_status === 'active') {
+                        window.location.reload();
+                        return;
+                    }
+                    if (data.players) {
+                        const list = document.getElementById('players-list');
+                        list.innerHTML = '';
+                        data.players.forEach(p => {
+                            const isMe = p.name === {{ player.name | tojson }};
+                            list.innerHTML += `
+                                <div class="player-item" style="border-color: ${isMe ? 'var(--primary-color)' : 'var(--border-color)'}">
+                                    <i data-lucide="user" style="width: 16px; height: 16px; color: ${isMe ? 'var(--primary-color)' : 'var(--text-secondary)'}"></i>
+                                    <div style="font-size: 0.9rem;">
+                                        <strong>${p.name}</strong><br>
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">${p.role_title}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        lucide.createIcons();
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        // Initial fetch
+        fetchPlayers();
+
+        // Poll every 3 seconds for players and status fallback
+        setInterval(() => {
+            fetchPlayers();
+        }, 3000);
+    </script>
+</body>
+</html>

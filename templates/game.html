@@ -5,17 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ player.name }} | Company Sim</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20width='32'%20height='32'%3E%3Crect%20width='24'%20height='24'%20rx='6'%20fill='%23111111'/%3E%3Crect%20width='12'%20height='12'%20x='6'%20y='6'%20rx='1.5'%20fill='none'%20stroke='%2339e622'%20stroke-width='1.5'/%3E%3Crect%20width='4'%20height='4'%20x='10'%20y='10'%20rx='0.5'%20fill='none'%20stroke='%2339e622'%20stroke-width='1.5'/%3E%3Cpath%20d='M10%202v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M14%202v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M10%2018v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M14%2018v4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M18%2010h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M18%2014h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M2%2010h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3Cpath%20d='M2%2014h4'%20stroke='%2339e622'%20stroke-width='1.5'%20stroke-linecap='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="/static/css/style.css?v=1.2">
-    <link rel="stylesheet" href="/static/css/charts.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=1.3">
+    <link rel="stylesheet" href="/static/css/charts.css?v=1.3">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="game-body">
-    <div id="loading-overlay" class="loading-overlay active">
-        <h2>Awaiting Session Start</h2>
-        <p style="color: var(--text-secondary); margin-top: 10px;">The administrator will initiate the simulation shortly.</p>
-    </div>
-
     
     <header class="kpi-header glass-panel">
         <div class="kpi-box">
@@ -105,7 +100,6 @@
             
             <div id="view-dashboard" class="view-section active">
                 <h2><i data-lucide="trending-up" class="inline-icon"></i> Performance Overview</h2>
-                
                 
                 <div class="glass-panel" style="margin-bottom: 25px; padding: 20px; background: var(--card-bg-solid);">
                     <h3 style="margin-bottom: 12px; font-family: var(--font-heading); font-size: 1.3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
@@ -269,7 +263,14 @@
             </div>
 
             
-            <div id="view-shop" class="view-section">
+            <div id="view-shop" class="view-section" style="position: relative;">
+                <div class="activity-lock-overlay" id="shop-lock-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); opacity: 0.96; z-index: 100; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; border-radius: 8px; backdrop-filter: blur(5px);">
+                    <i data-lucide="lock" style="width: 54px; height: 54px; color: var(--negative); margin-bottom: 15px;"></i>
+                    <h3 style="font-family: var(--font-heading); font-size: 1.6rem; margin-bottom: 8px; color: var(--text-primary);">Gadget Shop Locked</h3>
+                    <p style="color: var(--text-secondary); max-width: 420px; line-height: 1.4; font-size: 0.9rem;">
+                        The administrator has not started the simulation yet. Upgrades cannot be purchased in lobby mode.
+                    </p>
+                </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
                     <h2><i data-lucide="shopping-bag" class="inline-icon"></i> Gadget Shop</h2>
                     <div class="glass-panel" style="padding: 10px 20px; display: flex; align-items: center; gap: 10px; background: var(--card-bg-solid);">
@@ -403,7 +404,14 @@
             </div>
 
             
-            <div id="view-questions" class="view-section">
+            <div id="view-questions" class="view-section" style="position: relative;">
+                <div class="activity-lock-overlay" id="questions-lock-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); opacity: 0.96; z-index: 100; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; border-radius: 8px; backdrop-filter: blur(5px);">
+                    <i data-lucide="lock" style="width: 54px; height: 54px; color: var(--negative); margin-bottom: 15px;"></i>
+                    <h3 style="font-family: var(--font-heading); font-size: 1.6rem; margin-bottom: 8px; color: var(--text-primary);">Tasks Locked</h3>
+                    <p style="color: var(--text-secondary); max-width: 420px; line-height: 1.4; font-size: 0.9rem;">
+                        The administrator has not started the simulation yet. Tasks cannot be executed in lobby mode.
+                    </p>
+                </div>
                 <h2><i data-lucide="terminal" class="inline-icon"></i> Execute Tasks</h2>
                 <div class="task-selection-grid">
                     <div class="task-card card-work">
@@ -925,9 +933,42 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <script>
-        const socket = io();
+        const isLocal = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' || 
+                        window.location.hostname === '[::1]' || 
+                        window.location.hostname.startsWith('192.168.') || 
+                        window.location.hostname.startsWith('10.') || 
+                        window.location.hostname.startsWith('172.') || 
+                        window.location.port !== '';
+        const socket = io({
+            transports: ['polling'],
+            reconnection: true,
+            reconnectionAttempts: 20,
+            reconnectionDelay: 500
+        });
         const sessionId = "{{ session.id }}";
         const playerId = "{{ player.id }}";
+        let currentSessionStatus = null;
+        
+        function joinSocketRoom() {
+            console.log('[Socket] Joining room for player:', playerId);
+            socket.emit('join', { session_id: sessionId, player_id: playerId });
+        }
+        socket.on('connect', () => {
+            console.log('[Socket] Connected, SID:', socket.id);
+            joinSocketRoom();
+        });
+        socket.on('disconnect', (reason) => {
+            console.warn('[Socket] Disconnected:', reason);
+        });
+        socket.on('reconnect', () => {
+            console.log('[Socket] Reconnected, rejoining room...');
+            joinSocketRoom();
+        });
+        if (socket.connected) {
+            joinSocketRoom();
+        }
+
         let currentQuestionId = null;
         let currentQuestionType = null;
         let currentHint = "";
@@ -1664,34 +1705,33 @@
             }
         });
 
-        const initialStatus = "{{ session.status }}";
-        if (initialStatus === 'active') {
-            document.getElementById('loading-overlay').classList.remove('active');
-        } else if (initialStatus === 'paused') {
-            document.getElementById('loading-overlay').classList.add('active');
-            const h2 = document.querySelector('#loading-overlay h2');
-            const p = document.querySelector('#loading-overlay p');
-            if (h2) h2.textContent = "Session Paused";
-            if (p) p.textContent = "The administrator has paused the simulation.";
-        }
-
-        socket.on('connect', () => {
-            socket.emit('join', { session_id: sessionId, player_id: playerId });
+        // ---- SESSION STATUS SYNC (primary: socket, fallback: REST poll) ----
+        socket.on('game_started', (data) => {
+            console.log('[Socket] game_started received:', data);
+            updateSimulationStatusUI('active');
         });
 
-        socket.on('game_started', () => {
-            document.getElementById('loading-overlay').classList.remove('active');
+        socket.on('session_status_update', (data) => {
+            console.log('[Socket] session_status_update received:', data);
+            if (data && data.status) {
+                updateSimulationStatusUI(data.status);
+            }
         });
         
         socket.on('game_paused', () => {
-            document.getElementById('loading-overlay').classList.add('active');
-            document.querySelector('#loading-overlay h2').textContent = "Session Paused";
-            document.querySelector('#loading-overlay p').textContent = "The administrator has paused the simulation.";
+            console.log('[Socket] game_paused received');
+            updateSimulationStatusUI('paused');
+        });
+        
+        socket.on('game_resumed', () => {
+            console.log('[Socket] game_resumed received');
+            updateSimulationStatusUI('active');
         });
         
         socket.on('game_killed', () => {
             window.location.href = '/';
         });
+        // ---- END STATUS SYNC ----
 
         
         Chart.defaults.font.family = "'Inter', sans-serif";
@@ -2201,6 +2241,107 @@
             lucide.createIcons();
         }
 
+        function updateSimulationStatusUI(status) {
+            if (currentSessionStatus === status) return; // already in this state, no-op
+            currentSessionStatus = status;
+            console.log('[UI] Updating simulation status to:', status);
+
+            const shopLock = document.getElementById('shop-lock-overlay');
+            const questionsLock = document.getElementById('questions-lock-overlay');
+
+            if (status === 'active') {
+                if (shopLock) shopLock.style.display = 'none';
+                if (questionsLock) questionsLock.style.display = 'none';
+            } else if (status === 'paused') {
+                if (shopLock) {
+                    shopLock.style.display = 'flex';
+                    shopLock.querySelector('h3').textContent = 'Gadget Shop Locked';
+                    shopLock.querySelector('p').textContent = 'The administrator has paused the simulation. Upgrades cannot be purchased.';
+                }
+                if (questionsLock) {
+                    questionsLock.style.display = 'flex';
+                    questionsLock.querySelector('h3').textContent = 'Tasks Locked';
+                    questionsLock.querySelector('p').textContent = 'The administrator has paused the simulation. Tasks cannot be executed.';
+                }
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function updateTeamLobbyUI(players) {
+            const list = document.getElementById('lobby-players-list');
+            if (!list) return;
+            list.innerHTML = '';
+            
+            players.forEach(p => {
+                const isMe = p.name === {{ player.name | tojson }};
+                const card = document.createElement('div');
+                card.className = 'lobby-player-card';
+                card.style.padding = '10px';
+                card.style.background = isMe ? 'rgba(106, 76, 147, 0.08)' : 'var(--card-bg)';
+                card.style.borderRadius = '6px';
+                card.style.border = isMe ? '1px solid rgba(106, 76, 147, 0.2)' : '1px solid var(--border-color)';
+                card.style.display = 'flex';
+                card.style.alignItems = 'center';
+                card.style.gap = '10px';
+                card.style.boxShadow = 'var(--shadow-soft)';
+                
+                const initials = p.name ? p.name.charAt(0).toUpperCase() : '?';
+                const avatar = document.createElement('div');
+                avatar.style.width = '32px';
+                avatar.style.height = '32px';
+                avatar.style.borderRadius = '50%';
+                avatar.style.background = p.status === 'fired' ? 'var(--negative)' : 'var(--primary-color)';
+                avatar.style.color = 'white';
+                avatar.style.display = 'flex';
+                avatar.style.alignItems = 'center';
+                avatar.style.justifyContent = 'center';
+                avatar.style.fontWeight = 'bold';
+                avatar.style.fontSize = '0.85rem';
+                avatar.textContent = initials;
+                
+                const info = document.createElement('div');
+                info.style.display = 'flex';
+                info.style.flexDirection = 'column';
+                
+                const nameNode = document.createElement('div');
+                nameNode.style.fontWeight = '600';
+                nameNode.style.fontSize = '0.9rem';
+                nameNode.style.display = 'flex';
+                nameNode.style.alignItems = 'center';
+                nameNode.style.gap = '5px';
+                nameNode.textContent = isMe ? p.name + ' (You)' : p.name;
+                
+                if (p.status === 'fired') {
+                    const firedBadge = document.createElement('span');
+                    firedBadge.style.fontSize = '0.65rem';
+                    firedBadge.style.background = 'rgba(224, 94, 94, 0.15)';
+                    firedBadge.style.color = 'var(--negative)';
+                    firedBadge.style.padding = '1px 5px';
+                    firedBadge.style.borderRadius = '3px';
+                    firedBadge.style.fontWeight = 'bold';
+                    firedBadge.textContent = 'FIRED';
+                    nameNode.appendChild(firedBadge);
+                }
+                
+                const roleNode = document.createElement('div');
+                roleNode.style.fontSize = '0.75rem';
+                roleNode.style.color = 'var(--text-secondary)';
+                roleNode.textContent = p.role_title + ' • Score: ' + p.score;
+                
+                info.appendChild(nameNode);
+                info.appendChild(roleNode);
+                
+                card.appendChild(avatar);
+                card.appendChild(info);
+                list.appendChild(card);
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        socket.on('team_update', (data) => {
+            updateTeamLobbyUI(data.players);
+        });
+
         socket.on('global_leaderboard', (leaderboard) => {
             updateLeaderboardUI(leaderboard);
         });
@@ -2400,7 +2541,7 @@
                 btnHint.style.display = 'none';
             }
             
-            document.getElementById('q-domain').textContent = q.domain + " 
+            document.getElementById('q-domain').textContent = q.domain;
             
             
             document.getElementById('q-text-container').innerHTML = formatQuestionText(q.question);
@@ -2623,17 +2764,30 @@
             changeTheme(savedTheme);
             loadSupportHistory();
             
-            // Initial load of game state
+            // Initial load of game state immediately on page load
             loadGameState();
             
-            // Polling interval running every 3 seconds for serverless environments
+            // Guaranteed fallback: poll status every 2s in case socket events are missed
+            // The no-regression guard in updateSimulationStatusUI prevents going active→waiting
             setInterval(() => {
+                fetch('/api/session/status?player_id=' + playerId)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success && d.status) {
+                        updateSimulationStatusUI(d.status);
+                    }
+                })
+                .catch(() => {});
+            }, 2000);
+
+            // Full state sync every 5 seconds (KPIs, chat, leaderboard etc.)
+            setInterval(() => {
+                loadGameState();
                 if (!socket || !socket.connected) {
-                    loadGameState();
                     pollChatMessages();
                     pollSupportMessages();
                 }
-            }, 3000);
+            }, 5000);
             
             const tvWidget = document.getElementById('floating-news-widget');
             if (tvWidget) {
@@ -2643,9 +2797,10 @@
                     let leftVal = parseFloat(savedLeft);
                     let topVal = parseFloat(savedTop);
                     
+                    const minL = 280; // Sidebar width is ~260px, ensure it doesn't overlap
                     const maxL = window.innerWidth - 220; 
                     const maxT = window.innerHeight - 150; 
-                    leftVal = Math.max(0, Math.min(maxL, leftVal));
+                    leftVal = Math.max(minL, Math.min(maxL, leftVal));
                     topVal = Math.max(0, Math.min(maxT, topVal));
                     
                     tvWidget.style.bottom = 'auto';
@@ -2943,15 +3098,9 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    if (data.session_status === 'active') {
-                        document.getElementById('loading-overlay').classList.remove('active');
-                    } else if (data.session_status === 'paused') {
-                        document.getElementById('loading-overlay').classList.add('active');
-                        const h2 = document.querySelector('#loading-overlay h2');
-                        const p = document.querySelector('#loading-overlay p');
-                        if (h2) h2.textContent = "Session Paused";
-                        if (p) p.textContent = "The administrator has paused the simulation.";
-                    } else if (data.session_status === 'ended') {
+                    updateSimulationStatusUI(data.session_status);
+                    
+                    if (data.session_status === 'ended') {
                         window.location.href = '/';
                     }
 
@@ -2963,6 +3112,9 @@
                     updatePersonalUI(data.personal);
                     updateLeaderboardUI(data.global_leaderboard);
                     updateMarketNewsUI(data.market_news);
+                    if (data.players) {
+                        updateTeamLobbyUI(data.players);
+                    }
                 }
             })
             .catch(err => console.error('Error fetching game state:', err));

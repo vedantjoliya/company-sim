@@ -35,3 +35,7 @@ build/
 
 # Logs
 *.log
+
+instance/
+__pycache__/
+*.db
