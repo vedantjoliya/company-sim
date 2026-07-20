@@ -1946,7 +1946,10 @@ def setup_database():
             except Exception as e:
                 print(f"[Database] Error running SQLite migrations: {e}")
 
-        db.create_all()
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"[Database] Error creating tables (expected on read-only file systems like Vercel without DATABASE_URL): {e}")
 
         try:
             ended_sessions = GameSession.query.filter_by(status='ended').all()
